@@ -8,6 +8,7 @@ import 'package:observationer/screens/android_input_dialog.dart';
 import 'package:observationer/screens/ios_input_dialog.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:observationer/util/location_manager.dart';
+import 'bottom_nav_bar.dart';
 
 /// The map view. Shows current position and allows user to create new observations.
 class MapView extends StatefulWidget {
@@ -211,6 +212,7 @@ class _MapViewState extends State<MapView> {
           child: Icon(Icons.add),
         ),
       ),
+      bottomNavigationBar: navbar(0),
     );
   }
 }
