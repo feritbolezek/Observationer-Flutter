@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:observationer/util/observations_api.dart';
 import '../model/observation.dart';
 import 'one_observation_page.dart';
+import 'bottom_nav_bar.dart';
 
 /// Shows list of observations.
 class ObservationsPage extends StatefulWidget {
@@ -27,53 +28,53 @@ class _ObservationsPageState extends State<ObservationsPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Row(
-          children: [
-            Hero(
-              tag: 'icon',
-              child: Image(
-                color: Colors.white,
-                image: AssetImage('assets/images/obs_icon.png'),
-                width: 20.0,
+        appBar: AppBar(
+          centerTitle: true,
+          title: Row(
+            children: [
+              Hero(
+                tag: 'icon',
+                child: Image(
+                  color: Colors.white,
+                  image: AssetImage('assets/images/obs_icon.png'),
+                  width: 20.0,
+                ),
               ),
+              SizedBox(
+                width: 10,
+              ),
+              Text('Observationer'),
+            ],
+          ),
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh page',
+              onPressed: () {
+                setState(() {});
+              },
             ),
-            SizedBox(
-              width: 10,
-            ),
-            Text('Observationer'),
           ],
         ),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh page',
-            onPressed: () {
-              setState(() {});
-            },
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: refreshList,
-        child: Container(
-          child: FutureBuilder(
-            future: futureObservation = ObservationsAPI().fetchObservations(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return _buildListView(snapshot);
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            },
+        body: RefreshIndicator(
+          onRefresh: refreshList,
+          child: Container(
+            child: FutureBuilder(
+              future: futureObservation = ObservationsAPI().fetchObservations(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return _buildListView(snapshot);
+                } else if (snapshot.hasError) {
+                  return Text("${snapshot.error}");
+                }
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              },
+            ),
           ),
         ),
-      ),
-    );
+        bottomNavigationBar: navbar(1));
   }
 
   Widget _buildListView(snapshot) {
