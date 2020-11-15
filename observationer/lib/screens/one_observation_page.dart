@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/util/observations_api.dart';
+import 'bottom_nav_bar.dart';
 
 /// The view that displays specific/detailed data for a singular Observation.
 class OneObservationPage extends StatefulWidget {
@@ -24,6 +25,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
     return Scaffold(
       appBar: AppBar(),
       body: buildInfoAboutObservation(),
+      bottomNavigationBar: navbar(1)
     );
   }
 
