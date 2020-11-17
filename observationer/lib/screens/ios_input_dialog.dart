@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:observationer/model/input_dialog.dart';
 import 'package:observationer/model/observation.dart';
+import 'message_dialog.dart';
 
 /// A Cupertino style dialog for iOS.
 class iOSInputDialog implements InputDialog {
