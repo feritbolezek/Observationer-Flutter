@@ -63,6 +63,39 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   child: Column(children: [
                     headers(),
                     Container(
+                      margin: const EdgeInsets.only(left: 8),
+                      width: MediaQuery.of(context).size.width * 0.4,
+                      child: RaisedButton(
+                          //Ladda upp bild click-event
+                          onPressed: () {},
+                          color: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0),
+                              side: BorderSide(color: Colors.blue)),
+                          child: Padding(
+                            padding: EdgeInsets.all(0),
+                            child: Container(
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.file_upload,
+                                    color: Colors.white,
+                                  ),
+                                  Text(
+                                    'Lägg upp bild',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )),
+                    ),
+                    Container(
                         width: MediaQuery.of(context).size.width,
                         margin: const EdgeInsets.only(top: 30.0),
                         child: Row(children: [
