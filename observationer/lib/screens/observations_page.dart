@@ -12,6 +12,8 @@ class ObservationsPage extends StatefulWidget {
 
 class _ObservationsPageState extends State<ObservationsPage> {
   Future<List<Observation>> futureObservation;
+    int filterChoice = 2;
+
 
   /* //Refresh button doesn't work if you only fetch observations in initState()
   @override
@@ -105,6 +107,101 @@ class _ObservationsPageState extends State<ObservationsPage> {
               builder: (context) => OneObservationPage(obs)),
         );
       },
+    );
+  }
+   Widget _filter(){
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: <Widget>[
+          TextField(
+            style: TextStyle(color: Colors.black),
+            decoration: InputDecoration(
+              suffixIcon: new Icon(Icons.search),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Color.fromRGBO(180,180,180,0.1)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Color.fromRGBO(180,180,180,0.1)),
+              ),
+              border: new OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+                borderRadius: const BorderRadius.all(
+                  const Radius.circular(20.0),
+                ),
+              ),
+              fillColor: Color.fromRGBO(180,180,180,0.1),
+              filled: true,
+              hintText: 'Type Something...',
+              isDense: true,
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+
+            children: [
+              Text('Sortera', style: TextStyle(fontSize: 15),),
+
+                ButtonBar(
+                  children: <Widget>[
+                  ButtonTheme(
+                    minWidth: 100.0,
+                    height: 25.0,
+                    child: RaisedButton(
+                      color: filterChoice == 1? Colors.blue: Colors.grey,
+                      textColor: filterChoice == 1? Colors.white: Colors.black,
+                      onPressed: () {
+                        setState(() {
+                          filterChoice = 1;
+                        });
+                      },
+                    child: Text("Alfabetiskt",style: TextStyle(fontSize: 15)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                    ),
+                  ),
+                    ButtonTheme(
+                      minWidth: 100.0,
+                      height: 25.0,
+                      child: RaisedButton(
+                        color: filterChoice == 2? Colors.blue: Colors.grey,
+                        textColor: filterChoice == 2? Colors.white: Colors.black,
+                        onPressed: () {
+                          setState(() {
+                            filterChoice = 2;
+                          });
+                        },
+                        child: Text("Datum",style: TextStyle(fontSize: 15)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
+                      ),
+                    ),
+                    ButtonTheme(
+                      minWidth: 100.0,
+                      height: 25.0,
+                      child: RaisedButton(
+                        color: filterChoice == 3? Colors.blue: Colors.grey,
+                        textColor: filterChoice == 3? Colors.white: Colors.black,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            filterChoice = 3;
+                          });
+                        },
+                        child: Text("Närmaste",style: TextStyle(fontSize: 15)),
+                      ),
+                    ),
+                  ],
+                ),
+
+            ],
+          )
+        ],
+      ),
     );
   }
 }
