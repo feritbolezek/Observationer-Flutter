@@ -33,15 +33,17 @@ class _navbarState extends State<navbar> {
   }
 
   void onTabTapped(int index) {
-    setState(() {
-      _index = index;
-    });
-    if (_index == 0) {
-      Navigator.of(context)
-          .push(MaterialPageRoute<void>(builder: (context) => MapView()));
-    } else if (_index == 1) {
-      Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (context) => ObservationsPage()));
+    if(_index != index) {
+      setState(() {
+        _index = index;
+      });
+      if (_index == 0) {
+        Navigator.of(context)
+            .push(MaterialPageRoute<void>(builder: (context) => MapView()));
+      } else if (_index == 1) {
+        Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (context) => ObservationsPage()));
+      }
     }
   }
 }
