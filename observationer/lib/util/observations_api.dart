@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart';
 
 import '../model/observation.dart';
 import 'package:http/http.dart' as http;
@@ -76,10 +77,10 @@ class ObservationsAPI {
   /// This function will return the status code for the resulting HTTP request.
   static Future<int> uploadObservation(
       {@required String title,
-      @required double latitude,
-      @required double longitude,
-      String description,
-      String image}) async {
+        @required double latitude,
+        @required double longitude,
+        String description,
+        String image}) async {
     var payload = json.encode({
       'subject': title,
       'body': description,
@@ -98,4 +99,15 @@ class ObservationsAPI {
 
     return response.statusCode;
   }
+  Future<Response> delete(String id) async {
+    final http.Response response = await http.delete(
+      'https://saabstudent2020.azurewebsites.net/observation/$id',
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    return response;
+  }
+
 }
