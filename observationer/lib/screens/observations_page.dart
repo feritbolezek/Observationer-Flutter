@@ -91,15 +91,19 @@ class _ObservationsPageState extends State<ObservationsPage> {
   }
 
   Widget _buildRow(Observation obs) {
+    String body = obs.body ?? "";
+    String long = obs.longitude.toString() ?? "";
+    String lat = obs.latitude.toString() ?? "";
+    
     return ListTile(
       title: Text(obs.subject, style: TextStyle(fontWeight: FontWeight.bold)),
       subtitle: Text('Plats: ' +
-          obs.longitude.toString() +
+          long +
           ', ' +
-          obs.latitude.toString() +
+          lat +
           '\n' +
           'Anteckningar: ' +
-          obs.body),
+          body),
       isThreeLine: true, //Gives each item more space
       onTap: () {
         Navigator.of(context).push(
