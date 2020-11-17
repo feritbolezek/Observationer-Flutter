@@ -118,10 +118,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 height: 30.0,
                 child: Center(
                     child: Text(
-                  formatDate(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-                ))),
+                      formatDate(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                    ))),
             Container(height: 50.0, child: controllerButtons()),
           ]),
         ),
@@ -161,9 +161,9 @@ class _OneObservationPageState extends State<OneObservationPage> {
     return Container(
       decoration: BoxDecoration(
           image: DecorationImage(
-        image: AssetImage('assets/images/Placeholder.png'),
-        fit: BoxFit.fill,
-      )),
+            image: AssetImage('assets/images/Placeholder.png'),
+            fit: BoxFit.fill,
+          )),
     );
   }
 
@@ -173,7 +173,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
         // this will take space as minimum as posible(to center)
         children: <Widget>[
           new RaisedButton(
-              onPressed: () {},
+              onPressed: () {
+                ObservationsAPI().delete(obs.id.toString());
+                print(obs.id);
+              },
               color: Colors.red[400],
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18.0),
@@ -185,6 +188,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
+
                       Icon(
                         Icons.delete_forever_outlined,
                         color: Colors.white,
