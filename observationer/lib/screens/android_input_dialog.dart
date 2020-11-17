@@ -8,6 +8,7 @@ import 'package:observationer/model/input_dialog.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'message_dialog.dart';
 
 /// A material design style dialog for Android.
 class AndroidInputDialog implements InputDialog {
@@ -133,11 +134,17 @@ class AndroidInputDialog implements InputDialog {
                 ),
                 child: new Text('Lägg till'),
                 onPressed: () {
-                  onPressPositive(Observation(
-                      subject: title,
-                      body: desc,
-                      latitude: pos.latitude,
-                      longitude: pos.longitude));
+                  if (title == null || title == "") {
+                    var errorMessage = new MessageDialog();
+                    errorMessage.buildAndroidDialog(context, "Titel saknas",
+                        "Var god fyll i observationstitel.", true);
+                  } else {
+                    onPressPositive(Observation(
+                        subject: title,
+                        body: desc,
+                        latitude: pos.latitude,
+                        longitude: pos.longitude));
+                  }
                 },
               ),
             ],
