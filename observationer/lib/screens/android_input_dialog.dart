@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -14,10 +13,9 @@ import 'message_dialog.dart';
 class AndroidInputDialog implements InputDialog {
   AndroidInputDialog(
       {@required this.onPressPositive(Observation ob),
-        @required this.onPressNegative,
-        @required this.pos});
-
-  var firstCamera = null;
+      @required this.onPressNegative,
+      @required this.onImageReceived,
+      @required this.pos});
 
   @override
   Function onPressPositive;
@@ -25,24 +23,14 @@ class AndroidInputDialog implements InputDialog {
   @override
   Function onPressNegative;
 
+  @override
+  Function onImageReceived;
+
   String title;
   String desc;
   Position pos;
 
-  Future<void> loadCamera() async {
-    // Ensure that plugin services are initialized so that `availableCameras()`
-    // can be called before `runApp()`
-    WidgetsFlutterBinding.ensureInitialized();
-
-    // Obtain a list of the available cameras on the device.
-    final cameras = await availableCameras();
-
-    // Get a specific camera from the list of available cameras.
-    firstCamera = cameras.first;
-
-
-
-  }
+  String imgPath;
 
   Widget buildDialog(BuildContext context) {
     return AlertDialog(
@@ -63,17 +51,13 @@ class AndroidInputDialog implements InputDialog {
             children: [
               GestureDetector(
                   onTap: () {
-                    loadCamera();
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                          builder: (context) => TakePictureScreen(camera: firstCamera)),
-                    );
+                    _goToCameraView(context);
                   },
                   child: Image(
                       width: 150,
-                      image: AssetImage('assets/images/Placeholder.png')
-
-                  )),
+                      image: imgPath != null
+                          ? AssetImage(imgPath)
+                          : AssetImage('assets/images/Placeholder.png'))),
               Text('Bifoga ny bild'),
             ],
           ),
@@ -153,6 +137,18 @@ class AndroidInputDialog implements InputDialog {
       ),
     );
   }
+
+  Future<void> _goToCameraView(BuildContext context) async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    final cameras = await availableCameras();
+
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => TakePictureScreen(camera: cameras.first)),
+    );
+  }
 }
 
 class TakePictureScreen extends StatefulWidget {
@@ -170,6 +166,7 @@ class TakePictureScreen extends StatefulWidget {
 class TakePictureScreenState extends State<TakePictureScreen> {
   CameraController _controller;
   Future<void> _initializeControllerFuture;
+  String imagePath;
 
   @override
   void initState() {
@@ -195,7 +192,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Take a picture')),
+      appBar: AppBar(
+        title: Text('Take a picture'),
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left),
+          onPressed: () => Navigator.pop(context, imagePath),
+        ),
+      ),
       // Wait until the controller is initialized before displaying the
       // camera preview. Use a FutureBuilder to display a loading spinner
       // until the controller has finished initializing.
@@ -212,20 +215,18 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.camera_alt),
         onPressed: () async {
-
           try {
             // Ensure that the camera is initialized.
             await _initializeControllerFuture;
 
             final path = join(
-
               (await getTemporaryDirectory()).path,
               '${DateTime.now()}.png',
             );
 
+            imagePath = path;
+
             await _controller.takePicture(path);
-
-
 
             Navigator.push(
               context,
