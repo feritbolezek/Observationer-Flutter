@@ -103,15 +103,15 @@ class _MapViewState extends State<MapView> {
   }
 
   void supplyDialog() {
-    Platform.isIOS
-        ? _inputDialog = iOSInputDialog(
-            onPressPositive: uploadObservation,
-            onPressNegative: () {},
-            pos: _locationManager.getPosition())
-        : _inputDialog = AndroidInputDialog(
-            onPressPositive: uploadObservation,
-            onPressNegative: () {},
-            pos: _locationManager.getPosition());
+    // Platform.isIOS
+    //     ? _inputDialog = iOSInputDialog(
+    //         onPressPositive: uploadObservation,
+    //         onPressNegative: () {},
+    //         pos: _locationManager.getPosition())
+    //     : _inputDialog = AndroidInputDialog(
+    //         onPressPositive: uploadObservation,
+    //         onPressNegative: () {},
+    //         pos: _locationManager.getPosition());
   }
 
   void uploadObservation(Observation observation) {

@@ -67,17 +67,7 @@ class _AddObservationState extends State<AddObservation> {
                 ),
                 Stack(
                   alignment: Alignment.center,
-                  children: [
-                    GestureDetector(
-                        onTap: () {
-                          _goToCameraView(context);
-                        },
-                        child: Image(
-                            width: 200,
-                            image: imagesTakenPath.isNotEmpty
-                                ? FileImage(File(imagesTakenPath.first))
-                                : AssetImage('assets/images/Placeholder.png'))),
-                  ],
+                  children: [_previewDisplay(context)],
                 ),
                 SizedBox(
                   height: 8.0,
@@ -164,6 +154,78 @@ class _AddObservationState extends State<AddObservation> {
         ),
       ),
     );
+  }
+
+  Widget _previewDisplay(BuildContext context) {
+    // return GestureDetector(
+    //   onTap: () {
+    //     _goToCameraView(context);
+    //   },
+    //   child: Image(
+    //       width: 200,
+    //       image: imagesTakenPath.isNotEmpty
+    //           ? FileImage(File(imagesTakenPath.first))
+    //           : AssetImage('assets/images/Placeholder.png')),
+    // );
+
+    // return GridView.count(
+    //   primary: false,
+    //   padding: const EdgeInsets.all(20),
+    //   crossAxisSpacing: 10,
+    //   mainAxisSpacing: 10,
+    //   crossAxisCount: 4,
+    //   scrollDirection: Axis.vertical,
+    //   shrinkWrap: true,
+    //   children: _getImageChildren(context),
+    // );
+
+    return GridView.count(
+      primary: false,
+      padding: const EdgeInsets.all(20),
+      shrinkWrap: true,
+      crossAxisSpacing: 2,
+      mainAxisSpacing: 10,
+      crossAxisCount: 4,
+      children: _getImageChildren(context),
+    );
+  }
+
+  List<Widget> _getImageChildren(BuildContext context) {
+    List<Widget> images = [];
+
+    if (imagesTakenPath.isNotEmpty) {
+      print(imagesTakenPath.length);
+      for (var path in imagesTakenPath) {
+        if (path != null) {
+          images.add(Image(
+            width: 200,
+            image: FileImage(File(path)),
+          ));
+        }
+      }
+    }
+
+    images.add(GestureDetector(
+      onTap: () {
+        _goToCameraView(context);
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              Icon(Icons.add),
+              Text('Bifoga bild'),
+            ],
+          ),
+        ],
+      ),
+    ));
+
+    print("returning images: ${images.length}");
+
+    return images;
   }
 
   Future<void> _goToCameraView(BuildContext context) async {
