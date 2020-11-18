@@ -4,8 +4,6 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:observationer/model/input_dialog.dart';
-import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/display_image.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -196,28 +194,6 @@ class _AddObservationState extends State<AddObservation> {
   }
 
   Widget _previewDisplay() {
-    // return GestureDetector(
-    //   onTap: () {
-    //     _goToCameraView(context);
-    //   },
-    //   child: Image(
-    //       width: 200,
-    //       image: imagesTakenPath.isNotEmpty
-    //           ? FileImage(File(imagesTakenPath.first))
-    //           : AssetImage('assets/images/Placeholder.png')),
-    // );
-
-    // return GridView.count(
-    //   primary: false,
-    //   padding: const EdgeInsets.all(20),
-    //   crossAxisSpacing: 10,
-    //   mainAxisSpacing: 10,
-    //   crossAxisCount: 4,
-    //   scrollDirection: Axis.vertical,
-    //   shrinkWrap: true,
-    //   children: _getImageChildren(context),
-    // );
-
     return GridView.count(
       primary: false,
       padding: const EdgeInsets.all(20),

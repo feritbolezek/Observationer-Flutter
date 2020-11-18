@@ -77,15 +77,19 @@ class ObservationsAPI {
   /// This function will return the status code for the resulting HTTP request.
   static Future<int> uploadObservation(
       {@required String title,
-        @required double latitude,
-        @required double longitude,
-        String description,
-        String image}) async {
+      @required double latitude,
+      @required double longitude,
+      String description,
+      List<String> images}) async {
     var payload = json.encode({
       'subject': title,
       'body': description,
       'position': {'longitude': longitude, 'latitude': latitude}
     });
+
+    if (images != null && images.isNotEmpty) {
+      var imagePayload = jsonEncode({});
+    }
 
     Map<String, String> headers = {
       'Content-type': 'application/json',
@@ -99,6 +103,7 @@ class ObservationsAPI {
 
     return response.statusCode;
   }
+
   Future<Response> delete(String id) async {
     final http.Response response = await http.delete(
       'https://saabstudent2020.azurewebsites.net/observation/$id',
@@ -109,5 +114,4 @@ class ObservationsAPI {
 
     return response;
   }
-
 }
