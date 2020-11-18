@@ -296,8 +296,9 @@ class _AddObservationState extends State<AddObservation> {
       MaterialPageRoute(
           builder: (context) => TakePictureScreen(camera: cameras.first)),
     );
+    print("result: $result");
     setState(() {
-      imagesTakenPath.add(result);
+      if (result != null) imagesTakenPath.add(result);
     });
   }
 }
@@ -347,7 +348,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         title: Text('Take a picture'),
         leading: IconButton(
           icon: Icon(Icons.chevron_left),
-          onPressed: () => Navigator.pop(context, imagePath),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       // Wait until the controller is initialized before displaying the
