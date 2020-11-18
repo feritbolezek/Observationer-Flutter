@@ -118,6 +118,32 @@ class ObservationsAPI {
     }
   }
 
+  static Future<int> updateObservation(
+      {@required int id,
+        String title,
+        @required double latitude,
+        @required double longitude,
+        String description}) async {
+
+    var payload = json.encode({
+      'subject': title,
+      'body': description,
+      'position': {'longitude': longitude, 'latitude': latitude}
+    });
+
+    Map<String, String> headers = {
+      'Content-type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    var response = await http.put(
+        'https://saabstudent2020.azurewebsites.net/observation/$id',
+        headers: headers,
+        body: payload);
+
+    return response.statusCode;
+  }
+
   Future<Response> delete(String id) async {
     final http.Response response = await http.delete(
       'https://saabstudent2020.azurewebsites.net/observation/$id',

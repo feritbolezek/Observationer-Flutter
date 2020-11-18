@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/observation.dart';
+import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/observations_api.dart';
 import 'bottom_nav_bar.dart';
 
@@ -67,7 +68,9 @@ class _OneObservationPageState extends State<OneObservationPage> {
                       width: MediaQuery.of(context).size.width * 0.4,
                       child: RaisedButton(
                           //Ladda upp bild click-event
-                          onPressed: () {},
+                          onPressed: () {
+                            PhotoGalleryDialog().buildDialog(context);
+                          },
                           color: Colors.blue,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18.0),
@@ -238,7 +241,14 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 ),
               )),
           new RaisedButton(
-              onPressed: () {},
+              onPressed: () {
+                ObservationsAPI.updateObservation(
+                    id: obs.id,
+                    title: initialTextTitle,
+                    description: initialTextBody,
+                    latitude: obs.latitude,
+                    longitude: obs.longitude);
+              },
               color: Theme.of(context).accentColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18.0),
