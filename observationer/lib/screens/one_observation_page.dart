@@ -241,7 +241,14 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 ),
               )),
           new RaisedButton(
-              onPressed: () {},
+              onPressed: () {
+                ObservationsAPI.updateObservation(
+                    id: obs.id,
+                    title: initialTextTitle,
+                    description: initialTextBody,
+                    latitude: obs.latitude,
+                    longitude: obs.longitude);
+              },
               color: Theme.of(context).accentColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18.0),
