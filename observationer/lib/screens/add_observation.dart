@@ -239,7 +239,7 @@ class _AddObservationState extends State<AddObservation> {
   }
 
   _goToImageDisplay(BuildContext context, String path) async {
-    var res = Navigator.push(
+    var res = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => DisplayImage(path)),
     );
