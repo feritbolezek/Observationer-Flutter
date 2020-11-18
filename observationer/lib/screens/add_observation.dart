@@ -146,8 +146,8 @@ class _AddObservationState extends State<AddObservation> {
                           uploadObservation(Observation(
                               subject: title,
                               body: desc,
-                              latitude: pos.latitude,
-                              longitude: pos.longitude,
+                              latitude: pos == null ? 0.0 : pos.latitude,
+                              longitude: pos == null ? 0.0 : pos.longitude,
                               imageUrl: imagesTakenPath));
                         }
                       },
