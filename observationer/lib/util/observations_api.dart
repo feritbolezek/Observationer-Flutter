@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
@@ -87,10 +88,6 @@ class ObservationsAPI {
       'position': {'longitude': longitude, 'latitude': latitude}
     });
 
-    if (images != null && images.isNotEmpty) {
-      var imagePayload = jsonEncode({});
-    }
-
     Map<String, String> headers = {
       'Content-type': 'application/json',
       'Accept': 'application/json',
@@ -101,7 +98,32 @@ class ObservationsAPI {
         headers: headers,
         body: payload);
 
-    return response.statusCode;
+    if (response.statusCode >= 300) return response.statusCode;
+
+    int success = 0;
+    if (images != null && images.isNotEmpty) {
+      List<String> payloads = await getInBase64(images);
+      for (String payload in payloads) {
+        Map<String, String> headers = {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+        };
+
+        var response = await http.post(
+            'https://saabstudent2020.azurewebsites.net/observation/', // TODO: do some random stuff here
+            headers: headers,
+            body: payload);
+      }
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        success++;
+        print(
+            "FERIT: Successfully uploaded image: $success of ${images.length} with statuscode");
+      } else {
+        print(
+            "FERIT: FAILED UPLOADING IMAGE WITH STATUSCODE: ${response.statusCode}");
+      }
+    }
   }
 
   Future<Response> delete(String id) async {
@@ -113,5 +135,17 @@ class ObservationsAPI {
     );
 
     return response;
+  }
+
+  static Future<List<String>> getInBase64(List<String> images) async {
+    List<String> payloads = [];
+    for (String path in images) {
+      List<int> imageBytes = await File(path).readAsBytes();
+      String b64 = base64Encode(imageBytes);
+      var imagePayload = jsonEncode(
+          {'description': 'empty', 'type': 'image/png', 'dataBase64': b64});
+      payloads.add(imagePayload);
+    }
+    return payloads;
   }
 }

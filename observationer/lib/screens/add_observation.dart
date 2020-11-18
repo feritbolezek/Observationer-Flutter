@@ -4,17 +4,24 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/display_image.dart';
+import 'package:observationer/util/observations_api.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'message_dialog.dart';
 
 class AddObservation extends StatefulWidget {
+  AddObservation(this._position);
+
+  final _position;
   @override
-  _AddObservationState createState() => _AddObservationState();
+  _AddObservationState createState() => _AddObservationState(_position);
 }
 
 class _AddObservationState extends State<AddObservation> {
+  _AddObservationState(this.pos);
+
   String title;
   String desc;
   Position pos;
@@ -139,6 +146,14 @@ class _AddObservationState extends State<AddObservation> {
                           imagesTakenPath.forEach((element) {
                             print("FERIT: $element");
                           });
+
+                          uploadObservation(Observation(
+                              subject: title,
+                              body: desc,
+                              latitude: pos.latitude,
+                              longitude: pos.longitude,
+                              imageUrl: imagesTakenPath));
+
                           // onPressPositive(Observation(
                           //     subject: title,
                           //     body: desc,
@@ -155,6 +170,22 @@ class _AddObservationState extends State<AddObservation> {
         ),
       ),
     );
+  }
+
+  Future<int> uploadObservation(Observation observation) async {
+    if (observation.subject == null ||
+        observation.latitude == null ||
+        observation.longitude == null)
+      return null; // TODO: Probably present an error message or something.
+
+    Future<int> res = ObservationsAPI.uploadObservation(
+        title: observation.subject,
+        description: observation.body,
+        latitude: observation.latitude,
+        longitude: observation.longitude,
+        images: imagesTakenPath);
+
+    return res;
   }
 
   Future<void> _showAlertDialog() async {

@@ -239,7 +239,8 @@ class _MapViewState extends State<MapView> {
   _FaddObservation() async {
     var result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddObservation()),
+      MaterialPageRoute(
+          builder: (context) => AddObservation(_locationManager.getPosition())),
     );
   }
 }
