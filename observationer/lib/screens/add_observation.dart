@@ -22,6 +22,7 @@ class _AddObservationState extends State<AddObservation> {
   Position pos;
 
   List<String> imagesTakenPath;
+  bool _leave = false;
 
   @override
   void initState() {
@@ -68,7 +69,7 @@ class _AddObservationState extends State<AddObservation> {
                 ),
                 Stack(
                   alignment: Alignment.center,
-                  children: [_previewDisplay(context)],
+                  children: [_previewDisplay()],
                 ),
                 SizedBox(
                   height: 8.0,
@@ -110,8 +111,9 @@ class _AddObservationState extends State<AddObservation> {
                         ),
                       ),
                       child: new Text('Avbryt'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
+                      onPressed: () async {
+                        await _showAlertDialog();
+                        if (_leave) Navigator.of(context).pop();
                       },
                     ),
                     SizedBox(
@@ -157,7 +159,43 @@ class _AddObservationState extends State<AddObservation> {
     );
   }
 
-  Widget _previewDisplay(BuildContext context) {
+  Future<void> _showAlertDialog() async {
+    return showDialog<void>(
+      context: this.context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Är du säker?'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Dina ändringar kommer INTE att sparas.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Avbryt'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: Text('Ja'),
+              onPressed: () {
+                setState(() {
+                  _leave = true;
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _previewDisplay() {
     // return GestureDetector(
     //   onTap: () {
     //     _goToCameraView(context);
@@ -187,7 +225,7 @@ class _AddObservationState extends State<AddObservation> {
       crossAxisSpacing: 2,
       mainAxisSpacing: 10,
       crossAxisCount: 4,
-      children: _getImageChildren(context),
+      children: _getImageChildren(this.context),
     );
   }
 
@@ -200,7 +238,7 @@ class _AddObservationState extends State<AddObservation> {
         if (path != null) {
           images.add(GestureDetector(
             onTap: () {
-              _goToImageDisplay(context, path);
+              _goToImageDisplay(path);
             },
             child: Image(
               width: 200,
@@ -214,7 +252,7 @@ class _AddObservationState extends State<AddObservation> {
     images.add(GestureDetector(
       onTap: () {
         if (imagesTakenPath.length < 7)
-          _goToCameraView(context);
+          _goToCameraView();
         else
           MessageDialog()
               .buildDialog(context, "Fel", "Max antal bilder är 7.", true);
@@ -238,9 +276,9 @@ class _AddObservationState extends State<AddObservation> {
     return images;
   }
 
-  _goToImageDisplay(BuildContext context, String path) async {
+  _goToImageDisplay(String path) async {
     var res = await Navigator.push(
-      context,
+      this.context,
       MaterialPageRoute(builder: (context) => DisplayImage(path)),
     );
 
@@ -249,13 +287,13 @@ class _AddObservationState extends State<AddObservation> {
     });
   }
 
-  Future<void> _goToCameraView(BuildContext context) async {
+  Future<void> _goToCameraView() async {
     WidgetsFlutterBinding.ensureInitialized();
 
     final cameras = await availableCameras();
 
     var result = await Navigator.push(
-      context,
+      this.context,
       MaterialPageRoute(
           builder: (context) => TakePictureScreen(camera: cameras.first)),
     );
