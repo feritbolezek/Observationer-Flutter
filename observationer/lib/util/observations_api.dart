@@ -100,7 +100,8 @@ class ObservationsAPI {
 
     if (response.statusCode >= 300) return response.statusCode;
 
-    int success = 0;
+    int obsId = json.decode(response.body)['id'];
+
     if (images != null && images.isNotEmpty) {
       List<String> payloads = await getInBase64(images);
       for (String payload in payloads) {
@@ -110,18 +111,9 @@ class ObservationsAPI {
         };
 
         var response = await http.post(
-            'https://saabstudent2020.azurewebsites.net/observation/', // TODO: do some random stuff here
+            'https://saabstudent2020.azurewebsites.net/observation/$obsId/attachment',
             headers: headers,
             body: payload);
-      }
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        success++;
-        print(
-            "FERIT: Successfully uploaded image: $success of ${images.length} with statuscode");
-      } else {
-        print(
-            "FERIT: FAILED UPLOADING IMAGE WITH STATUSCODE: ${response.statusCode}");
       }
     }
   }
@@ -142,8 +134,12 @@ class ObservationsAPI {
     for (String path in images) {
       List<int> imageBytes = await File(path).readAsBytes();
       String b64 = base64Encode(imageBytes);
-      var imagePayload = jsonEncode(
-          {'description': 'empty', 'type': 'image/png', 'dataBase64': b64});
+
+      var imagePayload = jsonEncode({
+        'description': 'empty',
+        'type': 'image/jpeg',
+        'data': {'type': 'image/jpeg', 'dataBase64': b64},
+      });
       payloads.add(imagePayload);
     }
     return payloads;

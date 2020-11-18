@@ -143,22 +143,12 @@ class _AddObservationState extends State<AddObservation> {
                               "Var god fyll i observationstitel.",
                               true);
                         } else {
-                          imagesTakenPath.forEach((element) {
-                            print("FERIT: $element");
-                          });
-
                           uploadObservation(Observation(
                               subject: title,
                               body: desc,
                               latitude: pos.latitude,
                               longitude: pos.longitude,
                               imageUrl: imagesTakenPath));
-
-                          // onPressPositive(Observation(
-                          //     subject: title,
-                          //     body: desc,
-                          //     latitude: pos.latitude,
-                          //     longitude: pos.longitude));
                         }
                       },
                     ),
@@ -172,6 +162,7 @@ class _AddObservationState extends State<AddObservation> {
     );
   }
 
+  /// Will attempt to upload the data included within [observation].
   Future<int> uploadObservation(Observation observation) async {
     if (observation.subject == null ||
         observation.latitude == null ||
@@ -188,6 +179,7 @@ class _AddObservationState extends State<AddObservation> {
     return res;
   }
 
+  /// Shows an alert dialog when the user attempts to leave this view.
   Future<void> _showAlertDialog() async {
     return showDialog<void>(
       context: this.context,
