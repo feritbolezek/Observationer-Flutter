@@ -154,10 +154,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 height: 30.0,
                 child: Center(
                     child: Text(
-                      formatDate(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-                    ))),
+                  formatDate(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                ))),
             Container(height: 50.0, child: controllerButtons()),
           ]),
         ),
@@ -185,7 +185,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
             ),
           ),
           Align(
-            alignment: Alignment(-0.9,-0.9),
+            alignment: Alignment(-0.9, -0.9),
             child: Icon(Icons.edit, color: Colors.grey[600]),
           )
         ],
@@ -197,9 +197,9 @@ class _OneObservationPageState extends State<OneObservationPage> {
     return Container(
       decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Placeholder.png'),
-            fit: BoxFit.fill,
-          )),
+        image: AssetImage('assets/images/Placeholder.png'),
+        fit: BoxFit.fill,
+      )),
     );
   }
 
@@ -224,7 +224,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-
                       Icon(
                         Icons.delete_forever_outlined,
                         color: Colors.white,
@@ -310,8 +309,14 @@ class _OneObservationPageState extends State<OneObservationPage> {
   Widget mapView() {
     GoogleMapController mapController;
     CameraPosition observationLocation;
+    List<Marker> markers = <Marker>[];
 
     if (obs.latitude != null && obs.longitude != null) {
+      markers.add(Marker(
+        markerId: MarkerId(obs.id.toString()),
+        position: LatLng(obs.latitude, obs.longitude),
+        infoWindow: InfoWindow(title: obs.subject),
+      ));
       observationLocation = CameraPosition(
         target: LatLng(obs.latitude, obs.longitude),
         zoom: 14.4746,
@@ -332,6 +337,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
         body: GoogleMap(
           onMapCreated: _onMapCreated,
           initialCameraPosition: observationLocation,
+          markers: Set<Marker>.of(markers),
         ),
       ),
     );
