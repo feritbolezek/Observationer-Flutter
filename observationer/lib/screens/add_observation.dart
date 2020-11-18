@@ -52,7 +52,7 @@ class _AddObservationState extends State<AddObservation> {
             SizedBox(
               width: 10,
             ),
-            Text('Karta'),
+            Text('Lägg till ny observation'),
           ],
         ),
       ),
