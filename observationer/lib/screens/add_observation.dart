@@ -6,6 +6,7 @@ import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:observationer/model/input_dialog.dart';
 import 'package:observationer/model/observation.dart';
+import 'package:observationer/screens/display_image.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'message_dialog.dart';
@@ -197,9 +198,14 @@ class _AddObservationState extends State<AddObservation> {
       print(imagesTakenPath.length);
       for (var path in imagesTakenPath) {
         if (path != null) {
-          images.add(Image(
-            width: 200,
-            image: FileImage(File(path)),
+          images.add(GestureDetector(
+            onTap: () {
+              _goToImageDisplay(context, path);
+            },
+            child: Image(
+              width: 200,
+              image: FileImage(File(path)),
+            ),
           ));
         }
       }
@@ -207,7 +213,11 @@ class _AddObservationState extends State<AddObservation> {
 
     images.add(GestureDetector(
       onTap: () {
-        _goToCameraView(context);
+        if (imagesTakenPath.length < 7)
+          _goToCameraView(context);
+        else
+          MessageDialog()
+              .buildDialog(context, "Fel", "Max antal bilder är 7.", true);
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -226,6 +236,17 @@ class _AddObservationState extends State<AddObservation> {
     print("returning images: ${images.length}");
 
     return images;
+  }
+
+  _goToImageDisplay(BuildContext context, String path) async {
+    var res = Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => DisplayImage(path)),
+    );
+
+    setState(() {
+      imagesTakenPath.remove(res);
+    });
   }
 
   Future<void> _goToCameraView(BuildContext context) async {
