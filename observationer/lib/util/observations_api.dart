@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
@@ -77,10 +78,10 @@ class ObservationsAPI {
   /// This function will return the status code for the resulting HTTP request.
   static Future<int> uploadObservation(
       {@required String title,
-        @required double latitude,
-        @required double longitude,
-        String description,
-        String image}) async {
+      @required double latitude,
+      @required double longitude,
+      String description,
+      List<String> images}) async {
     var payload = json.encode({
       'subject': title,
       'body': description,
@@ -97,7 +98,24 @@ class ObservationsAPI {
         headers: headers,
         body: payload);
 
-    return response.statusCode;
+    if (response.statusCode >= 300) return response.statusCode;
+
+    int obsId = json.decode(response.body)['id'];
+
+    if (images != null && images.isNotEmpty) {
+      List<String> payloads = await getInBase64(images);
+      for (String payload in payloads) {
+        Map<String, String> headers = {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+        };
+
+        var response = await http.post(
+            'https://saabstudent2020.azurewebsites.net/observation/$obsId/attachment',
+            headers: headers,
+            body: payload);
+      }
+    }
   }
 
   static Future<int> updateObservation(
@@ -137,4 +155,19 @@ class ObservationsAPI {
     return response;
   }
 
+  static Future<List<String>> getInBase64(List<String> images) async {
+    List<String> payloads = [];
+    for (String path in images) {
+      List<int> imageBytes = await File(path).readAsBytes();
+      String b64 = base64Encode(imageBytes);
+
+      var imagePayload = jsonEncode({
+        'description': 'empty',
+        'type': 'image/jpeg',
+        'data': {'type': 'image/jpeg', 'dataBase64': b64},
+      });
+      payloads.add(imagePayload);
+    }
+    return payloads;
+  }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/input_dialog.dart';
 import 'package:observationer/model/observation.dart';
+import 'package:observationer/screens/add_observation.dart';
 import 'package:observationer/screens/android_input_dialog.dart';
 import 'package:observationer/screens/ios_input_dialog.dart';
 import 'package:geolocator/geolocator.dart';
@@ -102,15 +103,15 @@ class _MapViewState extends State<MapView> {
   }
 
   void supplyDialog() {
-    Platform.isIOS
-        ? _inputDialog = iOSInputDialog(
-            onPressPositive: uploadObservation,
-            onPressNegative: () {},
-            pos: _locationManager.getPosition())
-        : _inputDialog = AndroidInputDialog(
-            onPressPositive: uploadObservation,
-            onPressNegative: () {},
-            pos: _locationManager.getPosition());
+    // Platform.isIOS
+    //     ? _inputDialog = iOSInputDialog(
+    //         onPressPositive: uploadObservation,
+    //         onPressNegative: () {},
+    //         pos: _locationManager.getPosition())
+    //     : _inputDialog = AndroidInputDialog(
+    //         onPressPositive: uploadObservation,
+    //         onPressNegative: () {},
+    //         pos: _locationManager.getPosition());
   }
 
   void uploadObservation(Observation observation) {
@@ -226,17 +227,20 @@ class _MapViewState extends State<MapView> {
         padding: const EdgeInsets.only(bottom: 8.0, right: 8.0),
         child: FloatingActionButton(
           onPressed: () {
-            showDialog(
-                context: context,
-                builder: (context) {
-                  supplyDialog();
-                  return _inputDialog.buildDialog(context);
-                });
+            _FaddObservation();
           },
           child: Icon(Icons.add),
         ),
       ),
       bottomNavigationBar: navbar(0),
+    );
+  }
+
+  _FaddObservation() async {
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => AddObservation(_locationManager.getPosition())),
     );
   }
 }

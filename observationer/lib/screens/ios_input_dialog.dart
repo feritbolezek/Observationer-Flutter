@@ -9,6 +9,7 @@ class iOSInputDialog implements InputDialog {
   iOSInputDialog(
       {@required this.onPressPositive(Observation ob),
       @required this.onPressNegative,
+      @required this.onImageReceived,
       @required this.pos});
 
   @override
@@ -16,6 +17,9 @@ class iOSInputDialog implements InputDialog {
 
   @override
   Function onPressNegative;
+
+  @override
+  Function onImageReceived;
 
   String title;
   String desc;
