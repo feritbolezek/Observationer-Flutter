@@ -1,15 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/display_image.dart';
 import 'package:observationer/util/observations_api.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'message_dialog.dart';
+import 'dart:async';
+
 
 class AddObservation extends StatefulWidget {
   AddObservation(this._position);
@@ -29,6 +31,9 @@ class _AddObservationState extends State<AddObservation> {
   List<String> imagesTakenPath;
   bool _leave = false;
 
+  String _image;
+  final picker = ImagePicker();
+
   @override
   void initState() {
     imagesTakenPath = [];
@@ -41,18 +46,10 @@ class _AddObservationState extends State<AddObservation> {
       appBar: AppBar(
         title: Row(
           children: [
-            Hero(
-              tag: 'icon',
-              child: Image(
-                color: Colors.white,
-                image: AssetImage('assets/images/obs_icon.png'),
-                width: 20.0,
-              ),
-            ),
             SizedBox(
               width: 10,
             ),
-            Text('Lägg till ny observation'),
+            Text('Lägg till observation'),
           ],
         ),
       ),
@@ -152,6 +149,8 @@ class _AddObservationState extends State<AddObservation> {
                         }
                       },
                     ),
+
+
                   ],
                 )
               ],
@@ -232,7 +231,7 @@ class _AddObservationState extends State<AddObservation> {
     List<Widget> images = [];
 
     if (imagesTakenPath.isNotEmpty) {
-      print(imagesTakenPath.length);
+      //print(imagesTakenPath.length);
       for (var path in imagesTakenPath) {
         if (path != null) {
           images.add(GestureDetector(
@@ -250,8 +249,10 @@ class _AddObservationState extends State<AddObservation> {
 
     images.add(GestureDetector(
       onTap: () {
-        if (imagesTakenPath.length < 7)
-          _goToCameraView();
+        if (imagesTakenPath.length < 7) {
+          PhotoGalleryDialogue(context);
+
+        }
         else
           MessageDialog()
               .buildDialog(context, "Fel", "Max antal bilder är 7.", true);
@@ -270,10 +271,12 @@ class _AddObservationState extends State<AddObservation> {
       ),
     ));
 
-    print("returning images: ${images.length}");
+    //print("returning images: ${images.length}");
 
     return images;
   }
+
+
 
   _goToImageDisplay(String path) async {
     var res = await Navigator.push(
@@ -296,10 +299,168 @@ class _AddObservationState extends State<AddObservation> {
       MaterialPageRoute(
           builder: (context) => TakePictureScreen(camera: cameras.first)),
     );
-    print("result: $result");
+    print(result);
     setState(() {
       if (result != null) imagesTakenPath.add(result);
     });
+  }
+
+  Future<void> _picGallery() async {
+    final imageFile = await ImagePicker.pickImage(source: ImageSource.gallery,
+      maxWidth: 600,
+    );
+    if (imageFile == null) {
+      return;
+    }
+    setState(() {
+      _image = imageFile.path;
+      imagesTakenPath.add(_image);
+    });
+
+
+  }
+  PhotoGalleryDialogue(BuildContext context){
+    if (Platform.isIOS) {
+      buildIOSDialog(context);
+    }
+    //ANDROID MESSAGE DIALOG
+    else {
+      buildAndroidDialog(context);
+    }
+  }
+  buildAndroidDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Center(child: Text("Hur vill du gå vidare?")),
+            content: IntrinsicHeight(
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: ButtonBar(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              new ElevatedButton(
+                                  onPressed: () => {_goToCameraView(),
+                                    Navigator.of(context, rootNavigator: true).pop('dialog')},
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.blue,
+                                    textStyle: TextStyle(
+                                      fontSize: 14.0,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(12.0)),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(0),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.camera_alt,
+                                            color: Colors.white,
+                                          ),
+                                          Text('Ta foto'),
+                                        ],
+                                      ),
+                                    ),
+                                  )),
+                              new ElevatedButton(
+                                  onPressed: () => {_picGallery(),
+                                  Navigator.of(context, rootNavigator: true).pop('dialog')
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.blue,
+                                    textStyle: TextStyle(
+                                      fontSize: 14.0,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(12.0)),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(0),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.insert_photo,
+                                            color: Colors.white,
+                                          ),
+                                          Text('Galleri'),
+                                        ],
+                                      ),
+                                    ),
+                                  )),
+                            ]),
+                      ),
+                    ),
+                  ]),
+            ),
+          );
+        });
+  }
+
+  void buildIOSDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Center(child: Text("Hur vill du gå vidare?")),
+            content: IntrinsicHeight(
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    new CupertinoButton(
+                        onPressed: () => {_goToCameraView,
+                          Navigator.of(context, rootNavigator: true).pop('dialog')},
+                        child: Padding(
+                          padding: EdgeInsets.all(0),
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.camera_alt,
+                                ),
+                                Text('Ta foto'),
+                              ],
+                            ),
+                          ),
+                        )),
+                    new CupertinoButton(
+                        onPressed: () => {_picGallery(),
+                          Navigator.of(context, rootNavigator: true).pop('dialog')},
+                        child: Padding(
+                          padding: EdgeInsets.all(0),
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.insert_photo,
+                                ),
+                                Text('Galleri'),
+                              ],
+                            ),
+                          ),
+                        )),
+                  ]),
+            ),
+          );
+        });
   }
 }
 
@@ -388,4 +549,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       ),
     );
   }
+
 }
+
