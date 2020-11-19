@@ -18,6 +18,7 @@ class OneObservationPage extends StatefulWidget {
 class _OneObservationPageState extends State<OneObservationPage> {
   _OneObservationPageState(this.obs);
 
+  var _key = new GlobalKey<ScaffoldState>();
   Observation obs;
   String initialTextTitle, initialTextBody;
   Future<List<String>> futureObservationImages;
@@ -29,8 +30,19 @@ class _OneObservationPageState extends State<OneObservationPage> {
   @override
   void initState() {
     super.initState();
-    initialTextTitle = obs.subject;
-    initialTextBody = obs.body;
+    
+    if (obs.subject != null) {
+      initialTextTitle = obs.subject;
+    } else {
+      initialTextTitle = "Namnlös";
+    }
+
+    if (obs.body != null) {
+      initialTextBody = obs.body;
+    } else {
+      initialTextBody = "";
+    }
+    
     _editingControllerTitle = TextEditingController(text: initialTextTitle);
     _editingControllerBody = TextEditingController(text: initialTextBody);
   }
@@ -45,6 +57,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _key,
         appBar: AppBar(),
         body: buildInfoAboutObservation(),
         bottomNavigationBar: navbar(1));
@@ -63,41 +76,43 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   padding: const EdgeInsets.all(10),
                   child: Column(children: [
                     headers(),
-                    Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      width: MediaQuery.of(context).size.width * 0.4,
-                      child: RaisedButton(
-                          //Ladda upp bild click-event
-                          onPressed: () {
-                            PhotoGalleryDialog().buildDialog(context);
-                          },
-                          color: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0),
-                              side: BorderSide(color: Colors.blue)),
-                          child: Padding(
-                            padding: EdgeInsets.all(0),
-                            child: Container(
-                              alignment: Alignment.center,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.file_upload,
-                                    color: Colors.white,
+                    Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.only(left: 8.0),
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          child: RaisedButton(
+                              //Ladda upp bild click-event
+                              onPressed: () {
+                                PhotoGalleryDialog().buildDialog(context);
+                              },
+                              color: Colors.blue,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18.0),
+                                  side: BorderSide(color: Colors.blue)),
+                              child: Padding(
+                                padding: EdgeInsets.all(0),
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.file_upload,
+                                        color: Colors.white,
+                                      ),
+                                      Text(
+                                        'Lägg upp bild',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    'Lägg upp bild',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )),
-                    ),
+                                ),
+                              )),
+                        )),
                     Container(
                         width: MediaQuery.of(context).size.width,
                         margin: const EdgeInsets.only(top: 30.0),
@@ -210,8 +225,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
         children: <Widget>[
           new RaisedButton(
               onPressed: () {
-                ObservationsAPI().delete(obs.id.toString());
-                print(obs.id);
+                removeObservation(_key);
               },
               color: Colors.red[400],
               shape: RoundedRectangleBorder(
@@ -241,12 +255,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
               )),
           new RaisedButton(
               onPressed: () {
-                ObservationsAPI.updateObservation(
-                    id: obs.id,
-                    title: initialTextTitle,
-                    description: initialTextBody,
-                    latitude: obs.latitude,
-                    longitude: obs.longitude);
+                updateObservation(_key);
               },
               color: Theme.of(context).accentColor,
               shape: RoundedRectangleBorder(
@@ -346,6 +355,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
   Widget _editBody() {
     if (_editBodySwitch)
       return TextField(
+        textInputAction: TextInputAction.go,
+        maxLines: 10,
         onSubmitted: (newValue) {
           setState(() {
             initialTextBody = newValue;
@@ -357,6 +368,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
       );
     return Text(
       initialTextBody,
+      overflow: TextOverflow.ellipsis,
+      maxLines: 10,
       style: TextStyle(
         color: Colors.black,
         fontSize: 15.0,
@@ -406,5 +419,32 @@ class _OneObservationPageState extends State<OneObservationPage> {
     String date = string.substring(0, 10);
     String time = string.substring(11, 19);
     return date.replaceAll("-", "/") + " - " + time;
+  }
+  
+    void updateObservation(key) {
+    ObservationsAPI.updateObservation(
+        id: obs.id,
+        title: initialTextTitle,
+        description: initialTextBody,
+        latitude: obs.latitude,
+        longitude: obs.longitude)
+        .then((var result) {
+          String response = result.toString();
+          if(response == "204") response = "Observationen har uppdaterats.";
+          else response = "Uppdateringen misslyckades.";
+      key.currentState
+          .showSnackBar(SnackBar(content: Text(response)));
+    });
+  }
+
+  void removeObservation(key) {
+    ObservationsAPI.deleteObservation(obs.id.toString())
+        .then((var result) {
+      String response = result.toString();
+      if(response == "204") response = "Observationen har tagits bort.";
+      else response = "Borttagning misslyckades.";
+      key.currentState
+          .showSnackBar(SnackBar(content: Text(response)));
+    });
   }
 }

@@ -116,6 +116,7 @@ class ObservationsAPI {
             body: payload);
       }
     }
+    return response.statusCode;
   }
 
   static Future<int> updateObservation(
@@ -144,15 +145,15 @@ class ObservationsAPI {
     return response.statusCode;
   }
 
-  Future<Response> delete(String id) async {
-    final http.Response response = await http.delete(
+  static Future<int> deleteObservation(String id) async {
+    var response = await http.delete(
       'https://saabstudent2020.azurewebsites.net/observation/$id',
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
     );
 
-    return response;
+    return response.statusCode;
   }
 
   static Future<List<String>> getInBase64(List<String> images) async {
