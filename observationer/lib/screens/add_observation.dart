@@ -33,6 +33,8 @@ class _AddObservationState extends State<AddObservation> {
 
   String _image;
   final picker = ImagePicker();
+  
+  var _key = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _AddObservationState extends State<AddObservation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _key,
       appBar: AppBar(
         title: Row(
           children: [
@@ -140,12 +143,7 @@ class _AddObservationState extends State<AddObservation> {
                               "Var god fyll i observationstitel.",
                               true);
                         } else {
-                          uploadObservation(Observation(
-                              subject: title,
-                              body: desc,
-                              latitude: pos == null ? 0.0 : pos.latitude,
-                              longitude: pos == null ? 0.0 : pos.longitude,
-                              imageUrl: imagesTakenPath));
+                          insertObservation(_key);
                         }
                       },
                     ),
@@ -162,20 +160,20 @@ class _AddObservationState extends State<AddObservation> {
   }
 
   /// Will attempt to upload the data included within [observation].
-  Future<int> uploadObservation(Observation observation) async {
-    if (observation.subject == null ||
-        observation.latitude == null ||
-        observation.longitude == null)
-      return null; // TODO: Probably present an error message or something.
-
-    Future<int> res = ObservationsAPI.uploadObservation(
-        title: observation.subject,
-        description: observation.body,
-        latitude: observation.latitude,
-        longitude: observation.longitude,
-        images: imagesTakenPath);
-
-    return res;
+  void insertObservation(key) async {
+    ObservationsAPI.uploadObservation(
+        title: title,
+        description: desc,
+        latitude: pos == null ? 0.0 : pos.latitude,
+        longitude: pos == null ? 0.0 : pos.longitude,
+        images: imagesTakenPath)
+        .then((var result) {
+      String response = result.toString();
+      if(response == "201") response = "Observationen har skapats!";
+      else response = "Observationen kunde inte skapas.";
+      key.currentState
+          .showSnackBar(SnackBar(content: Text(response)));
+    });
   }
 
   /// Shows an alert dialog when the user attempts to leave this view.
