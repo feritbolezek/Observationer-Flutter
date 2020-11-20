@@ -3,6 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PhotoGalleryDialog {
+  //Optional parameters
+  PhotoGalleryDialog([this.camera, this.gallery]);
+  VoidCallback camera;
+  VoidCallback gallery;
+
   void buildDialog(BuildContext context) {
     //IOS MESSAGE DIALOG
     if (Platform.isIOS) {
@@ -30,7 +35,11 @@ class PhotoGalleryDialog {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               new ElevatedButton(
-                                  onPressed: () => {},
+                                  onPressed: () => {
+                                    if(camera != null){
+                                      camera()
+                                    }
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     primary: Colors.blue,
                                     textStyle: TextStyle(
@@ -57,7 +66,11 @@ class PhotoGalleryDialog {
                                     ),
                                   )),
                               new ElevatedButton(
-                                  onPressed: () => {},
+                                  onPressed: () => {
+                                    if(gallery != null){
+                                      gallery()
+                                    }
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     primary: Colors.blue,
                                     textStyle: TextStyle(
@@ -105,7 +118,11 @@ class PhotoGalleryDialog {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     new CupertinoButton(
-                        onPressed: () => {},
+                        onPressed: () => {
+                          if(camera != null){
+                            camera()
+                          }
+                        },
                         child: Padding(
                           padding: EdgeInsets.all(0),
                           child: Container(
@@ -122,7 +139,11 @@ class PhotoGalleryDialog {
                           ),
                         )),
                     new CupertinoButton(
-                        onPressed: () => {},
+                        onPressed: () => {
+                          if(gallery != null){
+                            gallery()
+                          }
+                        },
                         child: Padding(
                           padding: EdgeInsets.all(0),
                           child: Container(
