@@ -375,7 +375,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
   Widget _editBody() {
     if (_editBodySwitch)
       return TextField(
-        textInputAction: TextInputAction.go,
+        textInputAction: TextInputAction.done,
         maxLines: 10,
         onSubmitted: (newValue) {
           setState(() {
