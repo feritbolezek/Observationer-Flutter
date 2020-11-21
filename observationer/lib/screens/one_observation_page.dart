@@ -20,12 +20,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
 
   var _key = new GlobalKey<ScaffoldState>();
   Observation obs;
-  String initialTextTitle, initialTextBody;
+  String initialTextTitle, initialTextBody, initialTextLatitude, initialTextLongitude;
   Future<List<String>> futureObservationImages;
   bool _isEditingText = false;
   bool _editBodySwitch = false;
+  bool _editLatitudeSwitch = false;
+  bool _editLongitudeSwitch = false;
   TextEditingController _editingControllerTitle;
   TextEditingController _editingControllerBody;
+  TextEditingController _editingControllerLatitude;
+  TextEditingController _editingControllerLongitude;
 
   @override
   void initState() {
@@ -43,14 +47,33 @@ class _OneObservationPageState extends State<OneObservationPage> {
       initialTextBody = "";
     }
     
+    if (obs.latitude != null) {
+      initialTextLatitude =
+          obs.latitude.toString();
+    } else {
+      initialTextLatitude = "0.0";
+    }
+
+
+    if (obs.longitude != null) {
+      initialTextLongitude =
+          obs.longitude.toString();
+    } else {
+      initialTextLongitude = "0.0";
+    }
+    
     _editingControllerTitle = TextEditingController(text: initialTextTitle);
     _editingControllerBody = TextEditingController(text: initialTextBody);
+    _editingControllerLatitude = TextEditingController(text: initialTextLatitude);
+    _editingControllerLongitude = TextEditingController(text: initialTextLongitude);
   }
 
   @override
   void dispose() {
     _editingControllerTitle.dispose();
     _editingControllerBody.dispose();
+    _editingControllerLatitude.dispose();
+    _editingControllerLongitude.dispose();
     super.dispose();
   }
 
@@ -137,7 +160,33 @@ class _OneObservationPageState extends State<OneObservationPage> {
                     Container(
                         width: MediaQuery.of(context).size.width,
                         margin: const EdgeInsets.only(top: 30.0),
-                        child: locationWidget()),
+                        child: Row(children: [
+                          Text(
+                            "Latitud:",
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 17),
+                          ),
+                        ])),
+                    Container(
+                        alignment: Alignment.centerLeft,
+                        width: MediaQuery.of(context).size.width,
+                        child: _editLatitude()),
+                    Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: const EdgeInsets.only(top: 5.0),
+                        child: Row(children: [
+                          Text(
+                            "Longitud:",
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 17),
+                          ),
+                        ])),
+                    Container(
+                        alignment: Alignment.centerLeft,
+                        width: MediaQuery.of(context).size.width,
+                        child: _editLongitude()),
                     Container(
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height * 0.35,
@@ -286,35 +335,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
         ]);
   }
 
-  //Widget som visar positionen
-  Widget locationWidget() {
-    return IntrinsicHeight(
-      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Container(
-            margin: const EdgeInsets.only(left: 5.0, right: 10),
-            child: Icon(
-              Icons.map_outlined,
-              color: Colors.black,
-              size: 24.0,
-            )),
-        RichText(
-          text: TextSpan(
-            style: TextStyle(color: Colors.black),
-            children: <TextSpan>[
-              TextSpan(
-                  text: "Koordinater" + "\n",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(
-                  text: obs.latitude.toString() +
-                      ", " +
-                      obs.longitude.toString()),
-            ],
-          ),
-        ),
-      ]),
-    );
-  }
-
   Widget mapView() {
     GoogleMapController mapController;
     CameraPosition observationLocation;
@@ -412,6 +432,82 @@ class _OneObservationPageState extends State<OneObservationPage> {
                     child: Icon(Icons.edit, size: 20, color: Colors.grey[600]),
                   ),
                 ]))));
+  }
+  
+    Widget _editLatitude() {
+    if (_editLatitudeSwitch)
+      return TextField(
+        maxLines: 1,
+        keyboardType: TextInputType.number,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (newValue) {
+          setState(() {
+            initialTextLatitude = newValue;
+            _editLatitudeSwitch = false;
+          });
+        },
+        autofocus: true,
+        controller: _editingControllerLatitude,
+      );
+    return InkWell(
+        onTap: () {
+          setState(() {
+            _editLatitudeSwitch = true;
+          });
+        },
+        child: RichText(
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            text: TextSpan(children: [
+              TextSpan(
+                text: initialTextLatitude,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 15.0,
+                ),
+              ),
+              WidgetSpan(
+                child: Icon(Icons.edit, size: 20, color: Colors.grey[600]),
+              ),
+            ])));
+  }
+
+  Widget _editLongitude() {
+    if (_editLongitudeSwitch)
+      return TextField(
+        maxLines: 1,
+        keyboardType: TextInputType.number,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (newValue) {
+          setState(() {
+            initialTextLongitude = newValue;
+            _editLongitudeSwitch = false;
+          });
+        },
+        autofocus: true,
+        controller: _editingControllerLongitude,
+      );
+    return InkWell(
+        onTap: () {
+          setState(() {
+            _editLongitudeSwitch = true;
+          });
+        },
+        child: RichText(
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            text: TextSpan(children: [
+              TextSpan(
+                text: initialTextLongitude,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 15.0,
+                ),
+              ),
+              WidgetSpan(
+                child: Icon(Icons.edit, size: 20, color: Colors.grey[600]),
+              ),
+            ])));
   }
 
   String formatDate() {
