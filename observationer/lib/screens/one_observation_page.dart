@@ -278,7 +278,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
         children: <Widget>[
           new RaisedButton(
               onPressed: () {
-                removeObservation(_key);
+                buildDialog(context);
               },
               color: Colors.red[400],
               shape: RoundedRectangleBorder(
@@ -337,6 +337,88 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 ),
               ))
         ]);
+  }
+  
+  void buildDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Center(child: Text("Vill du ta bort observationen?")),
+            content: IntrinsicHeight(
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: ButtonBar(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              new ElevatedButton(
+                                  onPressed: () => {
+
+                                    removeObservation(_key),
+
+
+                                    Navigator.of(context).pop(),
+                                  Navigator.pop(context)
+
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.blue,
+                                    textStyle: TextStyle(
+                                      fontSize: 14.0,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(12.0)),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(0),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+
+                                          Text('Ja'),
+                                        ],
+                                      ),
+                                    ),
+                                  )),
+                              new ElevatedButton(
+                                  onPressed: () => {
+                                  Navigator.of(context).pop(),
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.red,
+                                    textStyle: TextStyle(
+                                      fontSize: 14.0,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(12.0)),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(0),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+
+                                          Text('Avbryt'),
+                                        ],
+                                      ),
+                                    ),
+                                  )),
+                            ]),
+                      ),
+                    ),
+                  ]),
+            ),
+          );
+        });
   }
 
   Widget mapView() {
