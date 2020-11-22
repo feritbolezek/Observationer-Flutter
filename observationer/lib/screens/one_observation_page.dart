@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/observations_api.dart';
+import 'package:observationer/util/position_input_formatter.dart';
 import 'bottom_nav_bar.dart';
 
 /// The view that displays specific/detailed data for a singular Observation.
@@ -20,7 +22,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
 
   var _key = new GlobalKey<ScaffoldState>();
   Observation obs;
-  String initialTextTitle, initialTextBody, initialTextLatitude, initialTextLongitude;
+  String initialTextTitle,
+      initialTextBody,
+      initialTextLatitude,
+      initialTextLongitude;
   Future<List<String>> futureObservationImages;
   bool _isEditingText = false;
   bool _editBodySwitch = false;
@@ -34,7 +39,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
   @override
   void initState() {
     super.initState();
-    
+
     if (obs.subject != null) {
       initialTextTitle = obs.subject;
     } else {
@@ -46,26 +51,25 @@ class _OneObservationPageState extends State<OneObservationPage> {
     } else {
       initialTextBody = "";
     }
-    
+
     if (obs.latitude != null) {
-      initialTextLatitude =
-          obs.latitude.toString();
+      initialTextLatitude = obs.latitude.toString();
     } else {
       initialTextLatitude = "0.0";
     }
 
-
     if (obs.longitude != null) {
-      initialTextLongitude =
-          obs.longitude.toString();
+      initialTextLongitude = obs.longitude.toString();
     } else {
       initialTextLongitude = "0.0";
     }
-    
+
     _editingControllerTitle = TextEditingController(text: initialTextTitle);
     _editingControllerBody = TextEditingController(text: initialTextBody);
-    _editingControllerLatitude = TextEditingController(text: initialTextLatitude);
-    _editingControllerLongitude = TextEditingController(text: initialTextLongitude);
+    _editingControllerLatitude =
+        TextEditingController(text: initialTextLatitude);
+    _editingControllerLongitude =
+        TextEditingController(text: initialTextLongitude);
   }
 
   @override
@@ -433,12 +437,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   ),
                 ]))));
   }
-  
-    Widget _editLatitude() {
+
+  Widget _editLatitude() {
     if (_editLatitudeSwitch)
       return TextField(
         maxLines: 1,
         keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
+          PositionInputFormatter(90.0, -90.0),
+        ],
         textInputAction: TextInputAction.done,
         onSubmitted: (newValue) {
           setState(() {
@@ -477,6 +485,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
       return TextField(
         maxLines: 1,
         keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
+          PositionInputFormatter(180.0, -180.0),
+        ],
         textInputAction: TextInputAction.done,
         onSubmitted: (newValue) {
           setState(() {
@@ -516,31 +528,32 @@ class _OneObservationPageState extends State<OneObservationPage> {
     String time = string.substring(11, 19);
     return date.replaceAll("-", "/") + " - " + time;
   }
-  
-    void updateObservation(key) {
+
+  void updateObservation(key) {
     ObservationsAPI.updateObservation(
-        id: obs.id,
-        title: initialTextTitle,
-        description: initialTextBody,
-        latitude: obs.latitude,
-        longitude: obs.longitude)
+            id: obs.id,
+            title: initialTextTitle,
+            description: initialTextBody,
+            latitude: double.parse(initialTextLatitude),
+            longitude: double.parse(initialTextLongitude))
         .then((var result) {
-          String response = result.toString();
-          if(response == "204") response = "Observationen har uppdaterats.";
-          else response = "Uppdateringen misslyckades.";
-      key.currentState
-          .showSnackBar(SnackBar(content: Text(response)));
+      String response = result.toString();
+      if (response == "204")
+        response = "Observationen har uppdaterats.";
+      else
+        response = "Uppdateringen misslyckades.";
+      key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
   }
 
   void removeObservation(key) {
-    ObservationsAPI.deleteObservation(obs.id.toString())
-        .then((var result) {
+    ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
       String response = result.toString();
-      if(response == "204") response = "Observationen har tagits bort.";
-      else response = "Borttagning misslyckades.";
-      key.currentState
-          .showSnackBar(SnackBar(content: Text(response)));
+      if (response == "204")
+        response = "Observationen har tagits bort.";
+      else
+        response = "Borttagning misslyckades.";
+      key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
   }
 }
