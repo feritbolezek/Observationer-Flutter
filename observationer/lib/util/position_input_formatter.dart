@@ -11,24 +11,23 @@ class PositionInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    TextEditingValue _newValue = newValue;
-    String text = _newValue.text;
+    String text = newValue.text;
 
     if (text == '.') {
       return TextEditingValue(
         text: '0.',
-        selection: _newValue.selection.copyWith(baseOffset: 2, extentOffset: 2),
+        selection: newValue.selection.copyWith(baseOffset: 2, extentOffset: 2),
         composing: TextRange.empty,
       );
     } else if (text == '-') {
       return TextEditingValue(
         text: '-',
-        selection: _newValue.selection.copyWith(baseOffset: 1, extentOffset: 1),
+        selection: newValue.selection.copyWith(baseOffset: 1, extentOffset: 1),
         composing: TextRange.empty,
       );
     }
 
-    return this.isValid(text) ? _newValue : oldValue;
+    return this.isValid(text) ? newValue : oldValue;
   }
 
   bool isValid(String text) {
