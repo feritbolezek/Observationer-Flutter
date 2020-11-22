@@ -107,11 +107,23 @@ class _ObservationsPageState extends State<ObservationsPage> {
       },
     );
   }
+  
 
   Widget _buildRow(Observation obs) {
     String body = obs.body ?? "";
     String long = obs.longitude.toString() ?? "";
     String lat = obs.latitude.toString() ?? "";
+    
+    FutureOr onGoBack(dynamic value) {
+     
+      //How to refresh list??
+      print('lol');
+    }
+    
+    void navigateSecondPage() {
+      Route route = MaterialPageRoute(builder: (context) => OneObservationPage(obs));
+      Navigator.push(context, route).then(onGoBack);
+    }
     
     return ListTile(
       title: Text(obs.subject, style: TextStyle(fontWeight: FontWeight.bold)),
@@ -124,10 +136,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
           body),
       isThreeLine: true, //Gives each item more space
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-              builder: (context) => OneObservationPage(obs)),
-        );
+        navigateSecondPage();
       },
     );
   }
