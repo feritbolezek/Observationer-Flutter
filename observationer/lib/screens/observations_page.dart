@@ -67,8 +67,26 @@ class _ObservationsPageState extends State<ObservationsPage> {
               if (snapshot.hasData) {
                 return _buildListView(snapshot);
               } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
+                  return AlertDialog(
+                    title: Text('Kunde ej hämta observationer'),
+                    content: SingleChildScrollView(
+                      child: ListBody(
+                        children: <Widget>[
+                          Text('Fel i anslutningen till databasen'),
+
+                        ],
+                      ),
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                }
               return Center(
                 child: CircularProgressIndicator(),
               );
