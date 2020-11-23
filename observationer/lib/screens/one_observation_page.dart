@@ -97,6 +97,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           obs.imageUrl = snapshot.data;
+          print(obs.imageUrl.length);
 
           return SingleChildScrollView(
               child: Padding(
@@ -240,18 +241,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
       child: Stack(
         children: <Widget>[
           Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.25,
-            margin: const EdgeInsets.only(right: 20.0),
-            child: Image.network(
-              //Displays first image
-              obs.imageUrl[0],
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace stackTrace) {
-                return observationWithoutImage();
-              },
-            ),
-          ),
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * 0.25,
+              margin: const EdgeInsets.only(right: 20.0),
+              child: imageStack()),
           Align(
             alignment: Alignment(-0.9, -0.9),
             child: Icon(Icons.edit, color: Colors.grey[600]),
@@ -269,6 +262,57 @@ class _OneObservationPageState extends State<OneObservationPage> {
         fit: BoxFit.fill,
       )),
     );
+  }
+
+  Widget imageStack() {
+    if (obs.imageUrl.length > 1) {
+      return Stack(
+        children: <Widget>[
+          Container(
+            decoration: BoxDecoration(
+                image: DecorationImage(
+              image: AssetImage('assets/images/Placeholder.png'),
+              fit: BoxFit.none,
+              alignment: Alignment.bottomRight,
+            )),
+          ),
+          Image.network(
+            //Displays first image
+            obs.imageUrl[0],
+            errorBuilder: (BuildContext context, Object exception,
+                StackTrace stackTrace) {
+              return observationWithoutImage();
+            },
+          ),
+          Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                width: 35,
+                height: 35,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+              )),
+          Positioned(
+              right: 7.0,
+              top: 5.0,
+              child: Text(
+                '+' + (obs.imageUrl.length - 1).toString(),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, color: Colors.black),
+              )),
+        ],
+      );
+    } else {
+      return Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+          image: AssetImage('assets/images/Placeholder.png'),
+          fit: BoxFit.fill,
+        )),
+      );
+    }
   }
 
   //Spara och ta bort knappar
@@ -338,7 +382,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
               ))
         ]);
   }
-  
+
   void buildDialog(BuildContext context) {
     showDialog(
         context: context,
@@ -356,14 +400,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                             children: [
                               new ElevatedButton(
                                   onPressed: () => {
-
-                                    removeObservation(_key),
-
-
-                                    Navigator.of(context).pop(),
-                                  Navigator.pop(context)
-
-                                  },
+                                        removeObservation(_key),
+                                        Navigator.of(context).pop(),
+                                        Navigator.pop(context)
+                                      },
                                   style: ElevatedButton.styleFrom(
                                     primary: Colors.blue,
                                     textStyle: TextStyle(
@@ -371,7 +411,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
                                     ),
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
-                                        BorderRadius.circular(12.0)),
+                                            BorderRadius.circular(12.0)),
                                   ),
                                   child: Padding(
                                     padding: EdgeInsets.all(0),
@@ -380,7 +420,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: <Widget>[
-
                                           Text('Ja'),
                                         ],
                                       ),
@@ -388,8 +427,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
                                   )),
                               new ElevatedButton(
                                   onPressed: () => {
-                                  Navigator.of(context).pop(),
-                                  },
+                                        Navigator.of(context).pop(),
+                                      },
                                   style: ElevatedButton.styleFrom(
                                     primary: Colors.red,
                                     textStyle: TextStyle(
@@ -397,7 +436,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
                                     ),
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
-                                        BorderRadius.circular(12.0)),
+                                            BorderRadius.circular(12.0)),
                                   ),
                                   child: Padding(
                                     padding: EdgeInsets.all(0),
@@ -406,7 +445,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: <Widget>[
-
                                           Text('Avbryt'),
                                         ],
                                       ),
