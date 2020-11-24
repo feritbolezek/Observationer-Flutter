@@ -264,7 +264,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
     );
   }
 
-  Widget imageStack() {
+   Widget imageStack() {
     if (obs.imageUrl.length > 1) {
       return Stack(
         children: <Widget>[
@@ -304,7 +304,18 @@ class _OneObservationPageState extends State<OneObservationPage> {
               )),
         ],
       );
-    } else {
+    } else if(obs.imageUrl.length == 1){
+      return Image.network(
+        //Displays first image
+        obs.imageUrl[0],
+        errorBuilder: (BuildContext context, Object exception,
+            StackTrace stackTrace) {
+          return observationWithoutImage();
+        },
+      );
+    }
+
+    else {
       return Container(
         decoration: BoxDecoration(
             image: DecorationImage(
