@@ -1,11 +1,11 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/observations_api.dart';
-import 'package:observationer/util/position_input_formatter.dart';
 import 'bottom_nav_bar.dart';
+import 'message_dialog.dart';
 
 /// The view that displays specific/detailed data for a singular Observation.
 class OneObservationPage extends StatefulWidget {
@@ -22,10 +22,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
 
   var _key = new GlobalKey<ScaffoldState>();
   Observation obs;
-  String initialTextTitle,
-      initialTextBody,
-      initialTextLatitude,
-      initialTextLongitude;
+  String initialTextTitle, initialTextBody, initialTextLatitude, initialTextLongitude;
   Future<List<String>> futureObservationImages;
   bool _isEditingText = false;
   bool _editBodySwitch = false;
@@ -35,6 +32,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
   TextEditingController _editingControllerBody;
   TextEditingController _editingControllerLatitude;
   TextEditingController _editingControllerLongitude;
+  int _currentImg = 0;
 
   @override
   void initState() {
@@ -53,23 +51,24 @@ class _OneObservationPageState extends State<OneObservationPage> {
     }
 
     if (obs.latitude != null) {
-      initialTextLatitude = obs.latitude.toString();
+      initialTextLatitude =
+          obs.latitude.toString();
     } else {
       initialTextLatitude = "0.0";
     }
 
+
     if (obs.longitude != null) {
-      initialTextLongitude = obs.longitude.toString();
+      initialTextLongitude =
+          obs.longitude.toString();
     } else {
       initialTextLongitude = "0.0";
     }
 
     _editingControllerTitle = TextEditingController(text: initialTextTitle);
     _editingControllerBody = TextEditingController(text: initialTextBody);
-    _editingControllerLatitude =
-        TextEditingController(text: initialTextLatitude);
-    _editingControllerLongitude =
-        TextEditingController(text: initialTextLongitude);
+    _editingControllerLatitude = TextEditingController(text: initialTextLatitude);
+    _editingControllerLongitude = TextEditingController(text: initialTextLongitude);
   }
 
   @override
@@ -97,7 +96,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           obs.imageUrl = snapshot.data;
-          print(obs.imageUrl.length);
 
           return SingleChildScrollView(
               child: Padding(
@@ -109,37 +107,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
                         child: Container(
                           margin: const EdgeInsets.only(left: 8.0),
                           width: MediaQuery.of(context).size.width * 0.4,
-                          child: RaisedButton(
-                              //Ladda upp bild click-event
-                              onPressed: () {
-                                PhotoGalleryDialog().buildDialog(context);
-                              },
-                              color: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18.0),
-                                  side: BorderSide(color: Colors.blue)),
-                              child: Padding(
-                                padding: EdgeInsets.all(0),
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.file_upload,
-                                        color: Colors.white,
-                                      ),
-                                      Text(
-                                        'Lägg upp bild',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )),
                         )),
                     Container(
                         width: MediaQuery.of(context).size.width,
@@ -223,10 +190,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 height: 30.0,
                 child: Center(
                     child: Text(
-                  formatDate(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-                ))),
+                      formatDate(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                    ))),
             Container(height: 50.0, child: controllerButtons()),
           ]),
         ),
@@ -236,15 +203,115 @@ class _OneObservationPageState extends State<OneObservationPage> {
 
   Widget observationWithImage() {
     return InkWell(
-      //TODO: funktion för att byta ut bild.
-      onTap: () {},
+      onTap: () {
+        showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder: (context) {
+              return SimpleDialog(
+                backgroundColor: Colors.white,
+                children: [
+                  CarouselSlider(
+                    options: CarouselOptions(
+                        enableInfiniteScroll: false,
+                        height: MediaQuery.of(context).size.width,
+                        enlargeCenterPage: true,
+                        onPageChanged: (index, reason) {
+                          setState(() {
+                            _currentImg = index;
+                          });
+                        }),
+                    items: obs.imageUrl
+                        .map(
+                          (pics) => Center(
+                          widthFactor: 2.0,
+                          child: Image.network(
+                            pics,
+                            fit: BoxFit.cover,
+                            width: MediaQuery.of(context).size.width,
+                          )),
+                        ).toList(),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Ink(
+                        decoration: ShapeDecoration(
+                          color: Colors.blue,
+                          shape: CircleBorder(),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.add),
+                          color: Colors.white,
+                          onPressed: () {
+                            if(obs.imageUrl.length < 7) { //bör vara parameter till photoGalleryDialog?
+                              PhotoGalleryDialog().buildDialog(context);
+                            }else{
+                              MessageDialog()
+                                  .buildDialog(context, "Fel", "Max antal bilder är 7.", true);
+                            }
+                          },
+                        ),
+                      ),
+                      Ink(
+                          decoration: ShapeDecoration(
+                            color: Colors.blue,
+                            shape: CircleBorder(),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.delete_forever_outlined,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text('Ta bort bild?'),
+                                      actions: [
+                                        FlatButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: Text('Avbryt'),
+                                        ),
+                                        FlatButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: Text('Ta bort'))
+                                      ],
+                                    );
+                                  }).then((exit) {
+                                if (exit) {
+                                  obs.imageUrl.removeAt(_currentImg);
+                                  updateObservation(_key);
+                                }
+                              });
+                            },
+                          )),
+                    ],
+                  ),
+                ],
+              );
+            });
+      },
+
       child: Stack(
         children: <Widget>[
           Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.25,
-              margin: const EdgeInsets.only(right: 20.0),
-              child: imageStack()),
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.25,
+            margin: const EdgeInsets.only(right: 20.0),
+            child: Image.network(
+              //Displays first image
+              obs.imageUrl[0],
+              errorBuilder: (BuildContext context, Object exception,
+                  StackTrace stackTrace) {
+                return observationWithoutImage();
+              },
+            ),
+          ),
           Align(
             alignment: Alignment(-0.9, -0.9),
             child: Icon(Icons.edit, color: Colors.grey[600]),
@@ -258,61 +325,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
     return Container(
       decoration: BoxDecoration(
           image: DecorationImage(
-        image: AssetImage('assets/images/Placeholder.png'),
-        fit: BoxFit.fill,
-      )),
+            image: AssetImage('assets/images/Placeholder.png'),
+            fit: BoxFit.fill,
+          )),
     );
-  }
-
-  Widget imageStack() {
-    if (obs.imageUrl.length > 1) {
-      return Stack(
-        children: <Widget>[
-          Container(
-            decoration: BoxDecoration(
-                image: DecorationImage(
-              image: AssetImage('assets/images/Placeholder.png'),
-              fit: BoxFit.none,
-              alignment: Alignment.bottomRight,
-            )),
-          ),
-          Image.network(
-            //Displays first image
-            obs.imageUrl[0],
-            errorBuilder: (BuildContext context, Object exception,
-                StackTrace stackTrace) {
-              return observationWithoutImage();
-            },
-          ),
-          Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                width: 35,
-                height: 35,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                ),
-              )),
-          Positioned(
-              right: 7.0,
-              top: 5.0,
-              child: Text(
-                '+' + (obs.imageUrl.length - 1).toString(),
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, color: Colors.black),
-              )),
-        ],
-      );
-    } else {
-      return Container(
-        decoration: BoxDecoration(
-            image: DecorationImage(
-          image: AssetImage('assets/images/Placeholder.png'),
-          fit: BoxFit.fill,
-        )),
-      );
-    }
   }
 
   //Spara och ta bort knappar
@@ -322,7 +338,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
         children: <Widget>[
           new RaisedButton(
               onPressed: () {
-                buildDialog(context);
+                removeObservation(_key);
               },
               color: Colors.red[400],
               shape: RoundedRectangleBorder(
@@ -383,82 +399,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
         ]);
   }
 
-  void buildDialog(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Center(child: Text("Vill du ta bort observationen?")),
-            content: IntrinsicHeight(
-              child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: ButtonBar(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              new ElevatedButton(
-                                  onPressed: () => {
-                                        removeObservation(_key),
-                                        Navigator.of(context).pop(),
-                                        Navigator.pop(context)
-                                      },
-                                  style: ElevatedButton.styleFrom(
-                                    primary: Colors.blue,
-                                    textStyle: TextStyle(
-                                      fontSize: 14.0,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12.0)),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(0),
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          Text('Ja'),
-                                        ],
-                                      ),
-                                    ),
-                                  )),
-                              new ElevatedButton(
-                                  onPressed: () => {
-                                        Navigator.of(context).pop(),
-                                      },
-                                  style: ElevatedButton.styleFrom(
-                                    primary: Colors.red,
-                                    textStyle: TextStyle(
-                                      fontSize: 14.0,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12.0)),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(0),
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          Text('Avbryt'),
-                                        ],
-                                      ),
-                                    ),
-                                  )),
-                            ]),
-                      ),
-                    ),
-                  ]),
-            ),
-          );
-        });
-  }
-
   Widget mapView() {
     GoogleMapController mapController;
     CameraPosition observationLocation;
@@ -505,6 +445,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
           setState(() {
             initialTextBody = newValue;
             _editBodySwitch = false;
+            updateObservation(_key);
           });
         },
         autofocus: true,
@@ -529,6 +470,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
             setState(() {
               initialTextTitle = newValue;
               _isEditingText = false;
+              updateObservation(_key);
             });
           },
           autofocus: true,
@@ -563,15 +505,12 @@ class _OneObservationPageState extends State<OneObservationPage> {
       return TextField(
         maxLines: 1,
         keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
-          PositionInputFormatter(90.0, -90.0),
-        ],
         textInputAction: TextInputAction.done,
         onSubmitted: (newValue) {
           setState(() {
             initialTextLatitude = newValue;
             _editLatitudeSwitch = false;
+            updateObservation(_key);
           });
         },
         autofocus: true,
@@ -605,15 +544,12 @@ class _OneObservationPageState extends State<OneObservationPage> {
       return TextField(
         maxLines: 1,
         keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
-          PositionInputFormatter(180.0, -180.0),
-        ],
         textInputAction: TextInputAction.done,
         onSubmitted: (newValue) {
           setState(() {
             initialTextLongitude = newValue;
             _editLongitudeSwitch = false;
+            updateObservation(_key);
           });
         },
         autofocus: true,
@@ -651,29 +587,48 @@ class _OneObservationPageState extends State<OneObservationPage> {
 
   void updateObservation(key) {
     ObservationsAPI.updateObservation(
-            id: obs.id,
-            title: initialTextTitle,
-            description: initialTextBody,
-            latitude: double.parse(initialTextLatitude),
-            longitude: double.parse(initialTextLongitude))
+      id: obs.id,
+      title: initialTextTitle,
+      description: initialTextBody,
+      latitude: obs.latitude,
+      longitude: obs.longitude,
+    )
         .then((var result) {
       String response = result.toString();
-      if (response == "204")
-        response = "Observationen har uppdaterats.";
-      else
-        response = "Uppdateringen misslyckades.";
-      key.currentState.showSnackBar(SnackBar(content: Text(response)));
+      if(response == "204") response = "Observationen har uppdaterats.";
+      else response = "Uppdateringen misslyckades.";
+      key.currentState
+          .showSnackBar(SnackBar(content: Text(response)));
     });
   }
 
-  void removeObservation(key) {
-    ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
+  void updateObservation2(key) {
+    ObservationsAPI.updateObservation2(
+      id: obs.id,
+      title: initialTextTitle,
+      description: initialTextBody,
+      latitude: obs.latitude,
+      longitude: obs.longitude,
+      images: obs.imageUrl,
+    )
+        .then((var result) {
       String response = result.toString();
-      if (response == "204")
-        response = "Observationen har tagits bort.";
-      else
-        response = "Borttagning misslyckades.";
-      key.currentState.showSnackBar(SnackBar(content: Text(response)));
+      if(response == "204") response = "Observationen har uppdaterats.";
+      else response = "Uppdateringen misslyckades.";
+      key.currentState
+          .showSnackBar(SnackBar(content: Text(response)));
+    });
+  }
+
+
+  void removeObservation(key) {
+    ObservationsAPI.deleteObservation(obs.id.toString())
+        .then((var result) {
+      String response = result.toString();
+      if(response == "204") response = "Observationen har tagits bort.";
+      else response = "Borttagning misslyckades.";
+      key.currentState
+          .showSnackBar(SnackBar(content: Text(response)));
     });
   }
 }
