@@ -4,6 +4,8 @@
 <dict>
 	<key>NSCameraUsageDescription</key>
     	<string>Observationer vill använda din kamera</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    	<string>Observationer vill ha åtkomst till ditt galleri</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
