@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/observations_api.dart';
+import 'package:observationer/util/position_input_formatter.dart';
 import 'bottom_nav_bar.dart';
 
 /// The view that displays specific/detailed data for a singular Observation.
@@ -20,7 +22,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
 
   var _key = new GlobalKey<ScaffoldState>();
   Observation obs;
-  String initialTextTitle, initialTextBody, initialTextLatitude, initialTextLongitude;
+  String initialTextTitle,
+      initialTextBody,
+      initialTextLatitude,
+      initialTextLongitude;
   Future<List<String>> futureObservationImages;
   bool _isEditingText = false;
   bool _editBodySwitch = false;
@@ -34,7 +39,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
   @override
   void initState() {
     super.initState();
-    
+
     if (obs.subject != null) {
       initialTextTitle = obs.subject;
     } else {
@@ -46,26 +51,25 @@ class _OneObservationPageState extends State<OneObservationPage> {
     } else {
       initialTextBody = "";
     }
-    
+
     if (obs.latitude != null) {
-      initialTextLatitude =
-          obs.latitude.toString();
+      initialTextLatitude = obs.latitude.toString();
     } else {
       initialTextLatitude = "0.0";
     }
 
-
     if (obs.longitude != null) {
-      initialTextLongitude =
-          obs.longitude.toString();
+      initialTextLongitude = obs.longitude.toString();
     } else {
       initialTextLongitude = "0.0";
     }
-    
+
     _editingControllerTitle = TextEditingController(text: initialTextTitle);
     _editingControllerBody = TextEditingController(text: initialTextBody);
-    _editingControllerLatitude = TextEditingController(text: initialTextLatitude);
-    _editingControllerLongitude = TextEditingController(text: initialTextLongitude);
+    _editingControllerLatitude =
+        TextEditingController(text: initialTextLatitude);
+    _editingControllerLongitude =
+        TextEditingController(text: initialTextLongitude);
   }
 
   @override
@@ -93,6 +97,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           obs.imageUrl = snapshot.data;
+          print(obs.imageUrl.length);
 
           return SingleChildScrollView(
               child: Padding(
@@ -236,18 +241,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
       child: Stack(
         children: <Widget>[
           Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.25,
-            margin: const EdgeInsets.only(right: 20.0),
-            child: Image.network(
-              //Displays first image
-              obs.imageUrl[0],
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace stackTrace) {
-                return observationWithoutImage();
-              },
-            ),
-          ),
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * 0.25,
+              margin: const EdgeInsets.only(right: 20.0),
+              child: imageStack()),
           Align(
             alignment: Alignment(-0.9, -0.9),
             child: Icon(Icons.edit, color: Colors.grey[600]),
@@ -267,6 +264,57 @@ class _OneObservationPageState extends State<OneObservationPage> {
     );
   }
 
+  Widget imageStack() {
+    if (obs.imageUrl.length > 1) {
+      return Stack(
+        children: <Widget>[
+          Container(
+            decoration: BoxDecoration(
+                image: DecorationImage(
+              image: AssetImage('assets/images/Placeholder.png'),
+              fit: BoxFit.none,
+              alignment: Alignment.bottomRight,
+            )),
+          ),
+          Image.network(
+            //Displays first image
+            obs.imageUrl[0],
+            errorBuilder: (BuildContext context, Object exception,
+                StackTrace stackTrace) {
+              return observationWithoutImage();
+            },
+          ),
+          Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                width: 35,
+                height: 35,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+              )),
+          Positioned(
+              right: 7.0,
+              top: 5.0,
+              child: Text(
+                '+' + (obs.imageUrl.length - 1).toString(),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, color: Colors.black),
+              )),
+        ],
+      );
+    } else {
+      return Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+          image: AssetImage('assets/images/Placeholder.png'),
+          fit: BoxFit.fill,
+        )),
+      );
+    }
+  }
+
   //Spara och ta bort knappar
   Widget controllerButtons() {
     return ButtonBar(mainAxisSize: MainAxisSize.min,
@@ -274,7 +322,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
         children: <Widget>[
           new RaisedButton(
               onPressed: () {
-                removeObservation(_key);
+                buildDialog(context);
               },
               color: Colors.red[400],
               shape: RoundedRectangleBorder(
@@ -333,6 +381,82 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 ),
               ))
         ]);
+  }
+
+  void buildDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Center(child: Text("Vill du ta bort observationen?")),
+            content: IntrinsicHeight(
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: ButtonBar(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              new ElevatedButton(
+                                  onPressed: () => {
+                                        removeObservation(_key),
+                                        Navigator.of(context).pop(),
+                                        Navigator.pop(context)
+                                      },
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.blue,
+                                    textStyle: TextStyle(
+                                      fontSize: 14.0,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12.0)),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(0),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Text('Ja'),
+                                        ],
+                                      ),
+                                    ),
+                                  )),
+                              new ElevatedButton(
+                                  onPressed: () => {
+                                        Navigator.of(context).pop(),
+                                      },
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.red,
+                                    textStyle: TextStyle(
+                                      fontSize: 14.0,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12.0)),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(0),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Text('Avbryt'),
+                                        ],
+                                      ),
+                                    ),
+                                  )),
+                            ]),
+                      ),
+                    ),
+                  ]),
+            ),
+          );
+        });
   }
 
   Widget mapView() {
@@ -433,12 +557,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   ),
                 ]))));
   }
-  
-    Widget _editLatitude() {
+
+  Widget _editLatitude() {
     if (_editLatitudeSwitch)
       return TextField(
         maxLines: 1,
         keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
+          PositionInputFormatter(90.0, -90.0),
+        ],
         textInputAction: TextInputAction.done,
         onSubmitted: (newValue) {
           setState(() {
@@ -477,6 +605,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
       return TextField(
         maxLines: 1,
         keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
+          PositionInputFormatter(180.0, -180.0),
+        ],
         textInputAction: TextInputAction.done,
         onSubmitted: (newValue) {
           setState(() {
@@ -516,31 +648,32 @@ class _OneObservationPageState extends State<OneObservationPage> {
     String time = string.substring(11, 19);
     return date.replaceAll("-", "/") + " - " + time;
   }
-  
-    void updateObservation(key) {
+
+  void updateObservation(key) {
     ObservationsAPI.updateObservation(
-        id: obs.id,
-        title: initialTextTitle,
-        description: initialTextBody,
-        latitude: obs.latitude,
-        longitude: obs.longitude)
+            id: obs.id,
+            title: initialTextTitle,
+            description: initialTextBody,
+            latitude: double.parse(initialTextLatitude),
+            longitude: double.parse(initialTextLongitude))
         .then((var result) {
-          String response = result.toString();
-          if(response == "204") response = "Observationen har uppdaterats.";
-          else response = "Uppdateringen misslyckades.";
-      key.currentState
-          .showSnackBar(SnackBar(content: Text(response)));
+      String response = result.toString();
+      if (response == "204")
+        response = "Observationen har uppdaterats.";
+      else
+        response = "Uppdateringen misslyckades.";
+      key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
   }
 
   void removeObservation(key) {
-    ObservationsAPI.deleteObservation(obs.id.toString())
-        .then((var result) {
+    ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
       String response = result.toString();
-      if(response == "204") response = "Observationen har tagits bort.";
-      else response = "Borttagning misslyckades.";
-      key.currentState
-          .showSnackBar(SnackBar(content: Text(response)));
+      if (response == "204")
+        response = "Observationen har tagits bort.";
+      else
+        response = "Borttagning misslyckades.";
+      key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
   }
 }
