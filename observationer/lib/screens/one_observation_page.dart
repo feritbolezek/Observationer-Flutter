@@ -268,6 +268,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
     if (obs.imageUrl.length > 1) {
       return Stack(
         children: <Widget>[
+          Positioned(
+            height: 190,
+            width: 140,
+            child:
           Container(
             decoration: BoxDecoration(
                 image: DecorationImage(
@@ -275,7 +279,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
               fit: BoxFit.none,
               alignment: Alignment.bottomRight,
             )),
-          ),
+          )),
           Image.network(
             //Displays first image
             obs.imageUrl[0],
@@ -284,8 +288,9 @@ class _OneObservationPageState extends State<OneObservationPage> {
               return observationWithoutImage();
             },
           ),
-          Align(
-              alignment: Alignment.topRight,
+          Positioned(
+              top: 15,
+              right: 37,
               child: Container(
                 width: 35,
                 height: 35,
@@ -295,8 +300,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 ),
               )),
           Positioned(
-              right: 7.0,
-              top: 5.0,
+              right: 42.0,
+              top: 20.0,
               child: Text(
                 '+' + (obs.imageUrl.length - 1).toString(),
                 textAlign: TextAlign.center,
