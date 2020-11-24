@@ -29,47 +29,65 @@ class StartingPageBody extends StatelessWidget {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Column(
-        mainAxisSize: MainAxisSize.max,
         children: <Widget>[
-          const SizedBox(height: 150),
-          Hero(
-            tag: 'icon',
-            child: Image(
+
+          Spacer(),
+
+          Image(
               image: AssetImage('assets/images/obs_icon.png'),
-              width: 80.0,
+              width: 120.0,
             ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Observationer',
+
+          Text('Observationer',
             style: TextStyle(
                 color: Color(0xFF6ACEF0),
                 fontSize: 26.0,
                 fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(height: 250), //This is probably a bad way
+          Spacer(flex: 2),
+
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 5),
+              child: Text('Välkommen till Observationer!',
+                style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: 17.0,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+
           new ElevatedButton(
             style: ElevatedButton.styleFrom(
-              primary: Colors.blue,
-              padding: EdgeInsets.symmetric(horizontal: 55, vertical: 15),
-              textStyle: TextStyle(
+                primary: Colors.blue,
+                padding: EdgeInsets.symmetric(horizontal: 63, vertical: 15),
+                textStyle: TextStyle(
                 fontSize: 20.0,
               ),
             ),
             child: new Text('Till kartvyn'),
-            onPressed: () => {
-              Navigator.push(
+                  onPressed: () => {
+                  Navigator.push(
                   context, MaterialPageRoute(builder: (context) => MapView()))
             },
           ),
-          const SizedBox(height: 50),
+
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 3),
+              child: Text('eller',
+                style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 17.0,
+                    fontWeight: FontWeight.bold),
+            ),
+          ),
+
           new ElevatedButton(
             style: ElevatedButton.styleFrom(
               primary: Colors.blue,
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 17),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
               textStyle: TextStyle(
-                fontSize: 14.0,
+              fontSize: 20.0,
               ),
             ),
             child: new Text('Utforska observationer'),
@@ -80,6 +98,9 @@ class StartingPageBody extends StatelessWidget {
               );
             },
           ),
+
+          Spacer(),
+
         ],
       ),
     );
