@@ -331,6 +331,75 @@ class _OneObservationPageState extends State<OneObservationPage> {
     );
   }
 
+
+   Widget imageStack() {
+    if (obs.imageUrl.length > 1) {
+      return Stack(
+        children: <Widget>[
+          Positioned(
+            height: 190,
+            width: 140,
+            child:
+          Container(
+            decoration: BoxDecoration(
+                image: DecorationImage(
+              image: AssetImage('assets/images/Placeholder.png'),
+              fit: BoxFit.none,
+              alignment: Alignment.bottomRight,
+            )),
+          )),
+          Image.network(
+            //Displays first image
+            obs.imageUrl[0],
+            errorBuilder: (BuildContext context, Object exception,
+                StackTrace stackTrace) {
+              return observationWithoutImage();
+            },
+          ),
+          Positioned(
+              top: 15,
+              right: 37,
+              child: Container(
+                width: 35,
+                height: 35,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+              )),
+          Positioned(
+              right: 42.0,
+              top: 20.0,
+              child: Text(
+                '+' + (obs.imageUrl.length - 1).toString(),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, color: Colors.black),
+              )),
+        ],
+      );
+    } else if(obs.imageUrl.length == 1){
+      return Image.network(
+        //Displays first image
+        obs.imageUrl[0],
+        errorBuilder: (BuildContext context, Object exception,
+            StackTrace stackTrace) {
+          return observationWithoutImage();
+        },
+      );
+    }
+
+    else {
+      return Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+          image: AssetImage('assets/images/Placeholder.png'),
+          fit: BoxFit.fill,
+        )),
+      );
+    }
+  }
+
+
   //Spara och ta bort knappar
   Widget controllerButtons() {
     return ButtonBar(mainAxisSize: MainAxisSize.min,
