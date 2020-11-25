@@ -22,7 +22,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
 
   var _key = new GlobalKey<ScaffoldState>();
   Observation obs;
-  String initialTextTitle, initialTextBody, initialTextLatitude, initialTextLongitude;
+  String initialTextTitle,
+      initialTextBody,
+      initialTextLatitude,
+      initialTextLongitude;
   Future<List<String>> futureObservationImages;
   bool _isEditingText = false;
   bool _editBodySwitch = false;
@@ -51,24 +54,23 @@ class _OneObservationPageState extends State<OneObservationPage> {
     }
 
     if (obs.latitude != null) {
-      initialTextLatitude =
-          obs.latitude.toString();
+      initialTextLatitude = obs.latitude.toString();
     } else {
       initialTextLatitude = "0.0";
     }
 
-
     if (obs.longitude != null) {
-      initialTextLongitude =
-          obs.longitude.toString();
+      initialTextLongitude = obs.longitude.toString();
     } else {
       initialTextLongitude = "0.0";
     }
 
     _editingControllerTitle = TextEditingController(text: initialTextTitle);
     _editingControllerBody = TextEditingController(text: initialTextBody);
-    _editingControllerLatitude = TextEditingController(text: initialTextLatitude);
-    _editingControllerLongitude = TextEditingController(text: initialTextLongitude);
+    _editingControllerLatitude =
+        TextEditingController(text: initialTextLatitude);
+    _editingControllerLongitude =
+        TextEditingController(text: initialTextLongitude);
   }
 
   @override
@@ -190,10 +192,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 height: 30.0,
                 child: Center(
                     child: Text(
-                      formatDate(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-                    ))),
+                  formatDate(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                ))),
             Container(height: 50.0, child: controllerButtons()),
           ]),
         ),
@@ -224,13 +226,14 @@ class _OneObservationPageState extends State<OneObservationPage> {
                     items: obs.imageUrl
                         .map(
                           (pics) => Center(
-                          widthFactor: 2.0,
-                          child: Image.network(
-                            pics,
-                            fit: BoxFit.cover,
-                            width: MediaQuery.of(context).size.width,
-                          )),
-                        ).toList(),
+                              widthFactor: 2.0,
+                              child: Image.network(
+                                pics,
+                                fit: BoxFit.cover,
+                                width: MediaQuery.of(context).size.width,
+                              )),
+                        )
+                        .toList(),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -244,11 +247,12 @@ class _OneObservationPageState extends State<OneObservationPage> {
                           icon: Icon(Icons.add),
                           color: Colors.white,
                           onPressed: () {
-                            if(obs.imageUrl.length < 7) { //bör vara parameter till photoGalleryDialog?
+                            if (obs.imageUrl.length < 7) {
+                              //bör vara parameter till photoGalleryDialog?
                               PhotoGalleryDialog().buildDialog(context);
-                            }else{
-                              MessageDialog()
-                                  .buildDialog(context, "Fel", "Max antal bilder är 7.", true);
+                            } else {
+                              MessageDialog().buildDialog(context, "Fel",
+                                  "Max antal bilder är 7.", true);
                             }
                           },
                         ),
@@ -296,7 +300,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
               );
             });
       },
-
       child: Stack(
         children: <Widget>[
           Container(
@@ -325,29 +328,27 @@ class _OneObservationPageState extends State<OneObservationPage> {
     return Container(
       decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Placeholder.png'),
-            fit: BoxFit.fill,
-          )),
+        image: AssetImage('assets/images/Placeholder.png'),
+        fit: BoxFit.fill,
+      )),
     );
   }
 
-
-   Widget imageStack() {
+  Widget imageStack() {
     if (obs.imageUrl.length > 1) {
       return Stack(
         children: <Widget>[
           Positioned(
-            height: 190,
-            width: 140,
-            child:
-          Container(
-            decoration: BoxDecoration(
-                image: DecorationImage(
-              image: AssetImage('assets/images/Placeholder.png'),
-              fit: BoxFit.none,
-              alignment: Alignment.bottomRight,
-            )),
-          )),
+              height: 190,
+              width: 140,
+              child: Container(
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                  image: AssetImage('assets/images/Placeholder.png'),
+                  fit: BoxFit.none,
+                  alignment: Alignment.bottomRight,
+                )),
+              )),
           Image.network(
             //Displays first image
             obs.imageUrl[0],
@@ -377,18 +378,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
               )),
         ],
       );
-    } else if(obs.imageUrl.length == 1){
+    } else if (obs.imageUrl.length == 1) {
       return Image.network(
         //Displays first image
         obs.imageUrl[0],
-        errorBuilder: (BuildContext context, Object exception,
-            StackTrace stackTrace) {
+        errorBuilder:
+            (BuildContext context, Object exception, StackTrace stackTrace) {
           return observationWithoutImage();
         },
       );
-    }
-
-    else {
+    } else {
       return Container(
         decoration: BoxDecoration(
             image: DecorationImage(
@@ -398,7 +397,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
       );
     }
   }
-
 
   //Spara och ta bort knappar
   Widget controllerButtons() {
@@ -661,43 +659,24 @@ class _OneObservationPageState extends State<OneObservationPage> {
       description: initialTextBody,
       latitude: obs.latitude,
       longitude: obs.longitude,
-    )
-        .then((var result) {
+    ).then((var result) {
       String response = result.toString();
-      if(response == "204") response = "Observationen har uppdaterats.";
-      else response = "Uppdateringen misslyckades.";
-      key.currentState
-          .showSnackBar(SnackBar(content: Text(response)));
+      if (response == "204")
+        response = "Observationen har uppdaterats.";
+      else
+        response = "Uppdateringen misslyckades.";
+      key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
   }
-
-  void updateObservation2(key) {
-    ObservationsAPI.updateObservation2(
-      id: obs.id,
-      title: initialTextTitle,
-      description: initialTextBody,
-      latitude: obs.latitude,
-      longitude: obs.longitude,
-      images: obs.imageUrl,
-    )
-        .then((var result) {
-      String response = result.toString();
-      if(response == "204") response = "Observationen har uppdaterats.";
-      else response = "Uppdateringen misslyckades.";
-      key.currentState
-          .showSnackBar(SnackBar(content: Text(response)));
-    });
-  }
-
 
   void removeObservation(key) {
-    ObservationsAPI.deleteObservation(obs.id.toString())
-        .then((var result) {
+    ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
       String response = result.toString();
-      if(response == "204") response = "Observationen har tagits bort.";
-      else response = "Borttagning misslyckades.";
-      key.currentState
-          .showSnackBar(SnackBar(content: Text(response)));
+      if (response == "204")
+        response = "Observationen har tagits bort.";
+      else
+        response = "Borttagning misslyckades.";
+      key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
   }
 }
