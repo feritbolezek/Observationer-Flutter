@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:observationer/screens/map_view.dart';
+import 'emergency_camera.dart';
 import 'observations_page.dart';
 
 class navbar extends StatefulWidget {
@@ -26,6 +27,10 @@ class _navbarState extends State<navbar> {
             label: "Karta",
           ),
           new BottomNavigationBarItem(
+            icon: Icon(Icons.add_a_photo, size: 25.0,),
+            label: ""
+          ),
+          new BottomNavigationBarItem(
             icon: Icon(Icons.add_location_alt),
             label: "Observationer",
           ),
@@ -41,9 +46,13 @@ class _navbarState extends State<navbar> {
         Navigator.of(context)
             .push(MaterialPageRoute<void>(builder: (context) => MapView()));
       } else if (_index == 1) {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => EmergencyCamera()));
+      } else if (_index == 2){
         Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (context) => ObservationsPage()));
       }
     }
   }
 }
+
