@@ -16,7 +16,7 @@ import 'dart:async';
 class AddObservation extends StatefulWidget {
   AddObservation(this._position);
   String path;
-  AddObservation.xd(this._position, path){
+  AddObservation.xd(this._position, path) {
     this.path = path;
   }
   final _position;
@@ -50,7 +50,7 @@ class _AddObservationState extends State<AddObservation> {
   void initState() {
     imagesTakenPath = [];
     super.initState();
-    if(path != null) imagesTakenPath.add(path);
+    if (path != null) imagesTakenPath.add(path);
   }
 
   @override
@@ -76,10 +76,6 @@ class _AddObservationState extends State<AddObservation> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Lägg till ny observation',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
                 SizedBox(
                   height: 16,
                 ),
@@ -121,7 +117,7 @@ class _AddObservationState extends State<AddObservation> {
                       style: ElevatedButton.styleFrom(
                         primary: Colors.red,
                         padding:
-                        EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+                            EdgeInsets.symmetric(horizontal: 25, vertical: 5),
                         textStyle: TextStyle(
                           fontSize: 14.0,
                         ),
@@ -138,9 +134,9 @@ class _AddObservationState extends State<AddObservation> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         primary:
-                        _uploadBtnIsEnabled ? Colors.blue : Colors.white70,
+                            _uploadBtnIsEnabled ? Colors.blue : Colors.white70,
                         padding:
-                        EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+                            EdgeInsets.symmetric(horizontal: 25, vertical: 5),
                         textStyle: TextStyle(
                           fontSize: 14.0,
                         ),
@@ -148,10 +144,10 @@ class _AddObservationState extends State<AddObservation> {
                       child: _uploadBtnIsEnabled
                           ? Text('Lägg till')
                           : Center(
-                          child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator())),
+                              child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator())),
                       onPressed: () {
                         if (title == null || title == "") {
                           var errorMessage = new MessageDialog();
@@ -193,11 +189,11 @@ class _AddObservationState extends State<AddObservation> {
   /// Will attempt to upload the data included within [observation].
   void insertObservation(key) async {
     ObservationsAPI.uploadObservation(
-        title: title,
-        description: desc,
-        latitude: pos == null ? 0.0 : pos.latitude,
-        longitude: pos == null ? 0.0 : pos.longitude,
-        images: imagesTakenPath)
+            title: title,
+            description: desc,
+            latitude: pos == null ? 0.0 : pos.latitude,
+            longitude: pos == null ? 0.0 : pos.longitude,
+            images: imagesTakenPath)
         .then((var result) {
       String response = result.toString();
       if (response == "201")
@@ -340,7 +336,7 @@ class _AddObservationState extends State<AddObservation> {
           value
               ? imagesTakenPath.add(result)
               : _key.currentState.showSnackBar(SnackBar(
-              content: Text("Fel: Bildstorleken överstiger 5 MB")));
+                  content: Text("Fel: Bildstorleken överstiger 5 MB")));
         });
       });
     }
@@ -360,7 +356,7 @@ class _AddObservationState extends State<AddObservation> {
         value
             ? imagesTakenPath.add(_image)
             : _key.currentState.showSnackBar(
-            SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
+                SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
       });
     });
   }
