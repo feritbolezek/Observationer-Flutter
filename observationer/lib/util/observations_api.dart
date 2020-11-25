@@ -132,10 +132,15 @@ class ObservationsAPI {
       'Accept': 'application/json',
     };
 
-    var response = await http.post(
-        'https://saabstudent2020.azurewebsites.net/observation/',
-        headers: headers,
-        body: payload);
+    bool success = true;
+    var response = await http
+        .post('https://saabstudent2020.azurewebsites.net/observation/',
+            headers: headers, body: payload)
+        .catchError((error) {
+      success = false;
+    });
+
+    if (!success) return 503; // Could indicate no internet connection.
 
     if (response.statusCode >= 300) return response.statusCode;
 

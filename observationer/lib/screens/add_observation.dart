@@ -25,12 +25,16 @@ class AddObservation extends StatefulWidget {
 class _AddObservationState extends State<AddObservation> {
   _AddObservationState(this.pos);
 
+  static const int MAX_IMAGE_SIZE = 5000000; // 5 MB
+
   String title;
   String desc;
   Position pos;
 
   List<String> imagesTakenPath;
   bool _leave = false;
+
+  bool _uploadBtnIsEnabled = true;
 
   String _image;
   final picker = ImagePicker();
@@ -127,14 +131,21 @@ class _AddObservationState extends State<AddObservation> {
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.blue,
+                        primary:
+                            _uploadBtnIsEnabled ? Colors.blue : Colors.white70,
                         padding:
                             EdgeInsets.symmetric(horizontal: 25, vertical: 5),
                         textStyle: TextStyle(
                           fontSize: 14.0,
                         ),
                       ),
-                      child: new Text('Lägg till'),
+                      child: _uploadBtnIsEnabled
+                          ? Text('Lägg till')
+                          : Center(
+                              child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator())),
                       onPressed: () {
                         if (title == null || title == "") {
                           var errorMessage = new MessageDialog();
@@ -144,7 +155,10 @@ class _AddObservationState extends State<AddObservation> {
                               "Var god fyll i observationstitel.",
                               true);
                         } else {
-                          insertObservation(_key);
+                          if (_uploadBtnIsEnabled) {
+                            _disableAddButton();
+                            insertObservation(_key);
+                          }
                         }
                       },
                     ),
@@ -156,6 +170,18 @@ class _AddObservationState extends State<AddObservation> {
         ),
       ),
     );
+  }
+
+  void _enableAddButton() {
+    setState(() {
+      _uploadBtnIsEnabled = true;
+    });
+  }
+
+  void _disableAddButton() {
+    setState(() {
+      _uploadBtnIsEnabled = false;
+    });
   }
 
   /// Will attempt to upload the data included within [observation].
@@ -171,9 +197,17 @@ class _AddObservationState extends State<AddObservation> {
       if (response == "201")
         response = "Observationen har skapats!";
       else
-        response = "Observationen kunde inte skapas.";
+        response = "Observationen kunde inte skapas. Felkod:${response}";
       key.currentState.showSnackBar(SnackBar(content: Text(response)));
+      _enableAddButton();
     });
+  }
+
+  Future<bool> _checkImageSize(String path) async {
+    var image = File(path);
+    int size = await image.length();
+
+    return size < MAX_IMAGE_SIZE;
   }
 
   /// Shows an alert dialog when the user attempts to leave this view.
@@ -294,9 +328,16 @@ class _AddObservationState extends State<AddObservation> {
           builder: (context) => TakePictureScreen(camera: cameras.first)),
     );
     print(result);
-    setState(() {
-      if (result != null) imagesTakenPath.add(result);
-    });
+    if (result != null) {
+      _checkImageSize(result).then((value) {
+        setState(() {
+          value
+              ? imagesTakenPath.add(result)
+              : _key.currentState.showSnackBar(SnackBar(
+                  content: Text("Fel: Bildstorleken överstiger 5 MB")));
+        });
+      });
+    }
   }
 
   Future<void> _picGallery() async {
@@ -309,7 +350,12 @@ class _AddObservationState extends State<AddObservation> {
     }
     setState(() {
       _image = imageFile.path;
-      imagesTakenPath.add(_image);
+      _checkImageSize(_image).then((value) {
+        value
+            ? imagesTakenPath.add(_image)
+            : _key.currentState.showSnackBar(
+                SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
+      });
     });
   }
 }
