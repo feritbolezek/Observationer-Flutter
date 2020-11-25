@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'emergency_camera.dart';
 import 'map_view.dart';
 import 'observations_page.dart';
 
@@ -22,7 +23,7 @@ class StartingPage extends StatelessWidget {
     );
   }
 }
- 
+
 class StartingPageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -34,9 +35,9 @@ class StartingPageBody extends StatelessWidget {
           Spacer(),
 
           Image(
-              image: AssetImage('assets/images/obs_icon.png'),
-              width: 120.0,
-            ),
+            image: AssetImage('assets/images/obs_icon.png'),
+            width: 120.0,
+          ),
 
           Text('Observationer',
             style: TextStyle(
@@ -44,13 +45,22 @@ class StartingPageBody extends StatelessWidget {
                 fontSize: 26.0,
                 fontWeight: FontWeight.bold),
           ),
-
+          Spacer(flex: 2),
+          IconButton(
+            icon: Icon(Icons.add_a_photo),
+            iconSize: 50,
+            color: Colors.blue.shade400,
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => EmergencyCamera()));
+            },
+          ),
           Spacer(flex: 2),
 
           Container(
             padding: EdgeInsets.symmetric(vertical: 5),
-              child: Text('Välkommen till Observationer!',
-                style: TextStyle(
+            child: Text('Välkommen till Observationer!',
+              style: TextStyle(
                   color: Colors.white60,
                   fontSize: 17.0,
                   fontWeight: FontWeight.bold),
@@ -59,26 +69,26 @@ class StartingPageBody extends StatelessWidget {
 
           new ElevatedButton(
             style: ElevatedButton.styleFrom(
-                primary: Colors.blue,
-                padding: EdgeInsets.symmetric(horizontal: 63, vertical: 15),
-                textStyle: TextStyle(
+              primary: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 63, vertical: 15),
+              textStyle: TextStyle(
                 fontSize: 20.0,
               ),
             ),
             child: new Text('Till kartvyn'),
-                  onPressed: () => {
-                  Navigator.push(
+            onPressed: () => {
+              Navigator.push(
                   context, MaterialPageRoute(builder: (context) => MapView()))
             },
           ),
 
           Container(
             padding: EdgeInsets.symmetric(vertical: 3),
-              child: Text('eller',
-                style: TextStyle(
-                    color: Colors.white60,
-                    fontSize: 17.0,
-                    fontWeight: FontWeight.bold),
+            child: Text('eller',
+              style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: 17.0,
+                  fontWeight: FontWeight.bold),
             ),
           ),
 
@@ -87,7 +97,7 @@ class StartingPageBody extends StatelessWidget {
               primary: Colors.blue,
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
               textStyle: TextStyle(
-              fontSize: 20.0,
+                fontSize: 20.0,
               ),
             ),
             child: new Text('Utforska observationer'),
