@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:observationer/util/location_manager.dart';
 import 'package:observationer/util/observations_api.dart';
 import '../model/observation.dart';
+import 'message_dialog.dart';
 import 'one_observation_page.dart';
 import 'bottom_nav_bar.dart';
 import 'dart:async';
@@ -13,8 +17,11 @@ class ObservationsPage extends StatefulWidget {
 
 class _ObservationsPageState extends State<ObservationsPage> {
   Future<List<Observation>> futureObservation;
-    int filterChoice = 2;
-
+  int filterChoice = 2;
+  LocationManager _locationManager;
+  bool _permission = false;
+  LatLng cords;
+  String search;
 
   /* //Refresh button doesn't work if you only fetch observations in initState()
   @override
@@ -28,74 +35,94 @@ class _ObservationsPageState extends State<ObservationsPage> {
     setState(() {});
   }
 
+  Future<void> _getCurrentLocation() async {
+    Position pos;
+    Stopwatch stopwatch = new Stopwatch()..start();
+    _locationManager = LocationManager();
+
+    _permission = await _locationManager.checkPermission();
+
+    if (_permission) {
+      //getCurrentLocation() is pretty slow, lastKnown is much faster
+      //Get last known position if there is one.
+      pos = await Geolocator.getLastKnownPosition() ??
+          await _locationManager.getCurrentLocation();
+      cords = LatLng(pos.latitude, pos.longitude);
+      print('doSomething() executed in ${stopwatch.elapsed}');
+    } else {
+      bool request = await _locationManager.requestPermission();
+      if (request) {
+        pos = await _locationManager.getCurrentLocation();
+        cords = LatLng(pos.latitude, pos.longitude);
+      } else {
+        _permission = false;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Row(
-          children: [
-            Hero(
-              tag: 'icon',
-              child: Image(
-                color: Colors.white,
-                image: AssetImage('assets/images/obs_icon.png'),
-                width: 20.0,
+        appBar: AppBar(
+          centerTitle: true,
+          title: Row(
+            children: [
+              Hero(
+                tag: 'icon',
+                child: Image(
+                  color: Colors.white,
+                  image: AssetImage('assets/images/obs_icon.png'),
+                  width: 20.0,
+                ),
               ),
+              SizedBox(
+                width: 10,
+              ),
+              Text('Observationer'),
+            ],
+          ),
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh page',
+              onPressed: () {
+                setState(() {});
+              },
             ),
-            SizedBox(
-              width: 10,
-            ),
-            Text('Observationer'),
           ],
         ),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh page',
-            onPressed: () {
-              setState(() {});
-            },
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: refreshList,
-        child: Container(
-          child: FutureBuilder(
-            future: futureObservation = ObservationsAPI().fetchObservations(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return _buildListView(snapshot);
-              } else if (snapshot.hasError) {
-                  return AlertDialog(
-                    title: Text('Kunde ej hämta observationer'),
-                    content: SingleChildScrollView(
-                      child: ListBody(
-                        children: <Widget>[
-                          Text('Fel i anslutningen till databasen'),
-
-                        ],
-                      ),
-                    ),
-                    actions: <Widget>[
-                      TextButton(
-                        child: Text('OK'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
-                }
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            },
+        body: RefreshIndicator(
+          onRefresh: refreshList,
+          child: Column(
+            children: [
+              Container(
+                child: _filter(),
+              ),
+              Expanded(
+                child: FutureBuilder(
+                  future: futureObservation = ObservationsAPI()
+                      .fetchObservations(filterChoice, cords, search),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return _buildListView(snapshot);
+                    } else if (snapshot.hasError) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) =>
+                          MessageDialog().buildDialog(
+                              context,
+                              "Kunde ej hämta observationer",
+                              "Fel i anslutningen till databasen",
+                              true));
+                    }
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-    bottomNavigationBar: navbar(1));
+        bottomNavigationBar: navbar(1));
   }
 
   Widget _buildListView(snapshot) {
@@ -108,53 +135,58 @@ class _ObservationsPageState extends State<ObservationsPage> {
       },
     );
   }
-  
 
   Widget _buildRow(Observation obs) {
     String body = obs.body ?? "";
     String long = obs.longitude.toString() ?? "";
     String lat = obs.latitude.toString() ?? "";
-    
+
     FutureOr onGoBack(dynamic value) {
-     
-      //How to refresh list??
-      print('lol');
+      refreshList();
     }
-    
+
     void navigateSecondPage() {
-      Route route = MaterialPageRoute(builder: (context) => OneObservationPage(obs));
+      Route route =
+          MaterialPageRoute(builder: (context) => OneObservationPage(obs));
       Navigator.push(context, route).then(onGoBack);
     }
-    
+
     return ListTile(
       title: Text(obs.subject, style: TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text('Plats: ' +
-          long +
-          ', ' +
-          lat +
-          '\n' +
-          'Anteckningar: ' +
-          body),
+      subtitle:
+          Text('Plats: ' + long + ', ' + lat + '\n' + 'Anteckningar: ' + body),
       isThreeLine: true, //Gives each item more space
       onTap: () {
         navigateSecondPage();
       },
     );
   }
-   Widget _filter(){
+
+  Widget _filter() {
+    var msgController = TextEditingController();
     return Container(
       padding: EdgeInsets.all(10),
       child: Column(
         children: <Widget>[
           TextField(
+            controller: msgController,
+            onSubmitted: (text) {
+              setState(() {
+                search = text;
+                filterChoice = 4;
+              });
+              msgController.clear();
+            },
             style: TextStyle(color: Colors.black),
             decoration: InputDecoration(
               suffixIcon: new Icon(Icons.search),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Color.fromRGBO(180,180,180,0.1)),
+                borderSide:
+                    BorderSide(color: Color.fromRGBO(180, 180, 180, 0.1)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Color.fromRGBO(180,180,180,0.1)),
+                borderSide:
+                    BorderSide(color: Color.fromRGBO(180, 180, 180, 0.1)),
               ),
               border: new OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.white),
@@ -162,7 +194,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                   const Radius.circular(20.0),
                 ),
               ),
-              fillColor: Color.fromRGBO(180,180,180,0.1),
+              fillColor: Color.fromRGBO(180, 180, 180, 0.1),
               filled: true,
               hintText: 'Type Something...',
               isDense: true,
@@ -170,66 +202,71 @@ class _ObservationsPageState extends State<ObservationsPage> {
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
-
             children: [
-              Text('Sortera', style: TextStyle(fontSize: 15),),
-
-                ButtonBar(
-                  children: <Widget>[
+              Text(
+                'Sortera',
+                style: TextStyle(fontSize: 15),
+              ),
+              ButtonBar(
+                children: <Widget>[
                   ButtonTheme(
                     minWidth: 100.0,
                     height: 25.0,
                     child: RaisedButton(
-                      color: filterChoice == 1? Colors.blue: Colors.grey,
-                      textColor: filterChoice == 1? Colors.white: Colors.black,
+                      color: filterChoice == 1 ? Colors.blue : Colors.grey,
+                      textColor:
+                          filterChoice == 1 ? Colors.white : Colors.black,
                       onPressed: () {
                         setState(() {
                           filterChoice = 1;
                         });
                       },
-                    child: Text("Alfabetiskt",style: TextStyle(fontSize: 15)),
+                      child:
+                          Text("Alfabetiskt", style: TextStyle(fontSize: 15)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18.0),
                       ),
                     ),
                   ),
-                    ButtonTheme(
-                      minWidth: 100.0,
-                      height: 25.0,
-                      child: RaisedButton(
-                        color: filterChoice == 2? Colors.blue: Colors.grey,
-                        textColor: filterChoice == 2? Colors.white: Colors.black,
-                        onPressed: () {
-                          setState(() {
-                            filterChoice = 2;
-                          });
-                        },
-                        child: Text("Datum",style: TextStyle(fontSize: 15)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.0),
-                        ),
+                  ButtonTheme(
+                    minWidth: 100.0,
+                    height: 25.0,
+                    child: RaisedButton(
+                      color: filterChoice == 2 ? Colors.blue : Colors.grey,
+                      textColor:
+                          filterChoice == 2 ? Colors.white : Colors.black,
+                      onPressed: () {
+                        setState(() {
+                          filterChoice = 2;
+                        });
+                      },
+                      child: Text("Datum", style: TextStyle(fontSize: 15)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
                       ),
                     ),
-                    ButtonTheme(
-                      minWidth: 100.0,
-                      height: 25.0,
-                      child: RaisedButton(
-                        color: filterChoice == 3? Colors.blue: Colors.grey,
-                        textColor: filterChoice == 3? Colors.white: Colors.black,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            filterChoice = 3;
-                          });
-                        },
-                        child: Text("Närmaste",style: TextStyle(fontSize: 15)),
+                  ),
+                  ButtonTheme(
+                    minWidth: 100.0,
+                    height: 25.0,
+                    child: RaisedButton(
+                      color: filterChoice == 3 ? Colors.blue : Colors.grey,
+                      textColor:
+                          filterChoice == 3 ? Colors.white : Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
                       ),
+                      onPressed: () async {
+                        await _getCurrentLocation();
+                        setState(() {
+                          filterChoice = 3;
+                        });
+                      },
+                      child: Text("Närmaste", style: TextStyle(fontSize: 15)),
                     ),
-                  ],
-                ),
-
+                  ),
+                ],
+              ),
             ],
           )
         ],

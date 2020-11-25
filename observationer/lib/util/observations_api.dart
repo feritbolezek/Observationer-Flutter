@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import '../model/observation.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,14 +15,14 @@ class ObservationsAPI {
   /// Fetches all observations from the database.
   ///
   /// Returns a list of Observations sometime in the future.
-  Future<List<Observation>> fetchObservations() async {
+  Future<List<Observation>> fetchObservations(
+      [int filter, LatLng pos, String search]) async {
     //Get all observations
     var data = await http
         .get('https://saabstudent2020.azurewebsites.net/observation/');
 
     if (data.statusCode == 200) {
       var jsonData = json.decode(data.body);
-
       for (int i = jsonData.length - 1; i >= 0; i--) {
         //If the observation has image(s)
         Observation obs = Observation(
@@ -35,6 +35,45 @@ class ObservationsAPI {
             imageUrl: ['']);
 
         observations.add(obs);
+      }
+
+      switch (filter) {
+        //Sort alphabetically
+        case 1:
+          {
+            observations.sort((a, b) =>
+                a.subject.toLowerCase().compareTo(b.subject.toLowerCase()));
+          }
+          break;
+        //Sort by date, newest first. This is the default.
+        case 2:
+          {
+            //Do nothing
+          }
+          break;
+        //Sort by closest distance to current GPS-position
+        case 3:
+          {
+            if (pos != null) {
+              observations.sort((a, b) => GeolocatorPlatform.instance
+                  .distanceBetween(
+                      pos.latitude, pos.longitude, a.latitude, a.longitude)
+                  .compareTo(GeolocatorPlatform.instance.distanceBetween(
+                      pos.latitude, pos.longitude, b.latitude, b.longitude)));
+            }
+          }
+          break;
+        //When you search for the name of an observation.
+        case 4:
+          {
+            if (search != null) {
+              return observations
+                  .where((i) =>
+                      i.subject.toLowerCase().contains(search.toLowerCase()))
+                  .toList();
+            }
+          }
+          break;
       }
       return observations;
     } else {
@@ -121,11 +160,10 @@ class ObservationsAPI {
 
   static Future<int> updateObservation(
       {@required int id,
-        String title,
-        @required double latitude,
-        @required double longitude,
-        String description}) async {
-
+      @required String title,
+      @required double latitude,
+      @required double longitude,
+      @required String description}) async {
     var payload = json.encode({
       'subject': title,
       'body': description,
