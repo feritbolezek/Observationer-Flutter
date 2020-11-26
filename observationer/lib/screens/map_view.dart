@@ -1,13 +1,8 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:observationer/model/input_dialog.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/add_observation.dart';
-import 'package:observationer/screens/android_input_dialog.dart';
-import 'package:observationer/screens/ios_input_dialog.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:observationer/util/location_manager.dart';
 import 'package:observationer/util/observations_api.dart';
@@ -26,12 +21,11 @@ class _MapViewState extends State<MapView> {
     zoom: 14.4746,
   );
 
-  InputDialog _inputDialog;
-
   LocationManager _locationManager;
 
   GoogleMap _googleMap;
   Completer<GoogleMapController> _controller = Completer();
+  List<Marker> markers = <Marker>[];
 
   CameraPosition _cameraPosition = _kGooglePlex;
 
@@ -102,18 +96,6 @@ class _MapViewState extends State<MapView> {
     super.initState();
   }
 
-  void supplyDialog() {
-    // Platform.isIOS
-    //     ? _inputDialog = iOSInputDialog(
-    //         onPressPositive: uploadObservation,
-    //         onPressNegative: () {},
-    //         pos: _locationManager.getPosition())
-    //     : _inputDialog = AndroidInputDialog(
-    //         onPressPositive: uploadObservation,
-    //         onPressNegative: () {},
-    //         pos: _locationManager.getPosition());
-  }
-
   void uploadObservation(Observation observation) {
     if (observation.subject == null ||
         observation.latitude == null ||
@@ -145,12 +127,26 @@ class _MapViewState extends State<MapView> {
   }
 
   Future<void> _initMapAndLocationRequests() async {
+    Position p = await _locationManager.getCurrentLocation();
+    List<Observation> observations =  await ObservationsAPI().fetchObservations(3, LatLng(p.latitude, p.longitude), "");
+
+    for(Observation obs in observations){
+      if(obs.latitude != null && obs.longitude != null){
+        markers.add(Marker(
+          markerId: MarkerId(obs.id.toString()),
+          position: LatLng(obs.latitude, obs.longitude),
+          infoWindow: InfoWindow(title: obs.subject),
+        ));
+      }
+    }
+    
     _googleMap = GoogleMap(
       myLocationEnabled: true,
       myLocationButtonEnabled: true,
       mapType: MapType.hybrid,
       liteModeEnabled: false,
       initialCameraPosition: _kGooglePlex,
+      markers: Set<Marker>.of(markers),
       zoomControlsEnabled: false,
       onMapCreated: (GoogleMapController controller) {
         _controller.complete(controller);
@@ -164,8 +160,6 @@ class _MapViewState extends State<MapView> {
     _locationManager.onLocationServicesEnabled(() {
       setState(() {}); // redraw
     });
-
-    Position p = await _locationManager.getCurrentLocation();
 
     goToCurrentLocation(p);
     setState(() {});
