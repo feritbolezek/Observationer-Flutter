@@ -45,7 +45,11 @@ class ObservationsAPI {
 
         observations.add(obs);
       }
-
+    } else {
+      onFailure(data.statusCode);
+      //throw Exception('Failed to load observations');
+    }
+    if (observations.isNotEmpty) {
       switch (filter) {
         //Sort alphabetically
         case 1:
@@ -84,10 +88,6 @@ class ObservationsAPI {
           }
           break;
       }
-      // return observations;
-    } else {
-      onFailure(data.statusCode);
-      //throw Exception('Failed to load observations');
     }
     return observations;
   }
