@@ -164,6 +164,12 @@ class _ObservationsPageState extends State<ObservationsPage> {
       title: Text(obs.subject, style: TextStyle(fontWeight: FontWeight.bold)),
       subtitle:
           Text('Plats: ' + long + ', ' + lat + '\n' + 'Anteckningar: ' + body),
+      trailing: obs.local
+          ? Text(
+              "LOKAL",
+              style: TextStyle(color: Colors.deepPurple[700]),
+            )
+          : Text(""),
       isThreeLine: true, //Gives each item more space
       onTap: () {
         navigateSecondPage();
