@@ -9,8 +9,10 @@ import 'package:observationer/screens/add_observation.dart';
 import 'package:observationer/screens/android_input_dialog.dart';
 import 'package:observationer/screens/ios_input_dialog.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/location_manager.dart';
 import 'package:observationer/util/observations_api.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'bottom_nav_bar.dart';
 
 /// The map view. Shows current position and allows user to create new observations.
@@ -169,15 +171,6 @@ class _MapViewState extends State<MapView> {
 
     goToCurrentLocation(p);
     setState(() {});
-
-    _locationManager.getPositionUpdates((lat, long) {
-      setState(() {
-        _cameraPosition = CameraPosition(
-          target: LatLng(lat, long),
-          zoom: 14.4746,
-        );
-      });
-    });
   }
 
   Widget locationNotAllowedView() {
@@ -214,13 +207,30 @@ class _MapViewState extends State<MapView> {
           ],
         ),
       ),
-      body: Container(
-        color: Colors.white,
-        child: Stack(
-          children: [
-            _googleMap == null ? locationNotAllowedView() : _googleMap,
-            currentLocationView(),
-          ],
+      body: VisibilityDetector(
+        key: Key('map-view'),
+        onVisibilityChanged: (visibilityInfo) {
+          if (visibilityInfo.visibleFraction == 1.0) {
+            _locationManager.getPositionUpdates((lat, long) {
+              setState(() {
+                _cameraPosition = CameraPosition(
+                  target: LatLng(lat, long),
+                  zoom: 14.4746,
+                );
+              });
+            });
+          } else {
+            _locationManager.stopPositionUpdates();
+          }
+        },
+        child: Container(
+          color: Colors.white,
+          child: Stack(
+            children: [
+              _googleMap == null ? locationNotAllowedView() : _googleMap,
+              currentLocationView(),
+            ],
+          ),
         ),
       ),
       floatingActionButton: Padding(

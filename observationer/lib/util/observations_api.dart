@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:observationer/util/local_file_manager.dart';
 import '../model/observation.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,8 +17,15 @@ class ObservationsAPI {
   ///
   /// Returns a list of Observations sometime in the future.
   Future<List<Observation>> fetchObservations(
-      [int filter, LatLng pos, String search]) async {
+      [int filter, LatLng pos, String search, void onFailure(int)]) async {
     //Get all observations
+
+    final obs = await loadLocalObservations();
+
+    observations.addAll(obs);
+
+    print("We got someting?: ${observations.length}");
+
     var data = await http
         .get('https://saabstudent2020.azurewebsites.net/observation/');
 
@@ -32,7 +40,8 @@ class ObservationsAPI {
             created: jsonData[i]['created'],
             longitude: jsonData[i]['position']['longitude'],
             latitude: jsonData[i]['position']['latitude'],
-            imageUrl: ['']);
+            imageUrl: [''],
+            local: false);
 
         observations.add(obs);
       }
@@ -75,14 +84,21 @@ class ObservationsAPI {
           }
           break;
       }
-      return observations;
+      // return observations;
     } else {
-      throw Exception('Failed to load observations');
+      onFailure(data.statusCode);
+      //throw Exception('Failed to load observations');
     }
+    return observations;
   }
 
   Future<List<String>> fetchObservationImages(Observation observation) async {
     Observation obs = observation;
+
+    if (observation.local) {
+      for (String image in observation.imageUrl) imageUrl.add(image);
+      return imageUrl;
+    }
 
     var imageData = await http.get(
         'https://saabstudent2020.azurewebsites.net/observation/' +
@@ -109,6 +125,13 @@ class ObservationsAPI {
     }
 
     return imageUrl;
+  }
+
+  Future<List<Observation>> loadLocalObservations() async {
+    LocalFileManager lfm = LocalFileManager();
+
+    List<Observation> obs = await lfm.readAllLocalObservations();
+    return obs;
   }
 
   /// Given the required parameter [title] and [position], uploads the given observation

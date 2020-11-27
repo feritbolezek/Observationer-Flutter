@@ -101,7 +101,15 @@ class _ObservationsPageState extends State<ObservationsPage> {
               Expanded(
                 child: FutureBuilder(
                   future: futureObservation = ObservationsAPI()
-                      .fetchObservations(filterChoice, cords, search),
+                      .fetchObservations(filterChoice, cords, search,
+                          (statusCode) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) =>
+                        MessageDialog().buildDialog(
+                            context,
+                            "Kunde ej hämta observationer",
+                            "Fel i anslutningen till databasen",
+                            true));
+                  }),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return _buildListView(snapshot);
@@ -112,6 +120,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                               "Kunde ej hämta observationer",
                               "Fel i anslutningen till databasen",
                               true));
+                      return Center(child: Text("Försök igen..."));
                     }
                     return Center(
                       child: CircularProgressIndicator(),
@@ -147,14 +156,20 @@ class _ObservationsPageState extends State<ObservationsPage> {
 
     void navigateSecondPage() {
       Route route =
-      MaterialPageRoute(builder: (context) => OneObservationPage(obs));
+          MaterialPageRoute(builder: (context) => OneObservationPage(obs));
       Navigator.push(context, route).then(onGoBack);
     }
 
     return ListTile(
       title: Text(obs.subject, style: TextStyle(fontWeight: FontWeight.bold)),
       subtitle:
-      Text('Plats: ' + long + ', ' + lat + '\n' + 'Anteckningar: ' + body),
+          Text('Plats: ' + long + ', ' + lat + '\n' + 'Anteckningar: ' + body),
+      trailing: obs.local
+          ? Text(
+              "LOKAL",
+              style: TextStyle(color: Colors.deepPurple[700]),
+            )
+          : Text(""),
       isThreeLine: true, //Gives each item more space
       onTap: () {
         navigateSecondPage();
@@ -182,11 +197,11 @@ class _ObservationsPageState extends State<ObservationsPage> {
               suffixIcon: new Icon(Icons.search),
               focusedBorder: OutlineInputBorder(
                 borderSide:
-                BorderSide(color: Color.fromRGBO(180, 180, 180, 0.1)),
+                    BorderSide(color: Color.fromRGBO(180, 180, 180, 0.1)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderSide:
-                BorderSide(color: Color.fromRGBO(180, 180, 180, 0.1)),
+                    BorderSide(color: Color.fromRGBO(180, 180, 180, 0.1)),
               ),
               border: new OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.white),
@@ -215,14 +230,14 @@ class _ObservationsPageState extends State<ObservationsPage> {
                     child: RaisedButton(
                       color: filterChoice == 1 ? Colors.blue : Colors.grey,
                       textColor:
-                      filterChoice == 1 ? Colors.white : Colors.black,
+                          filterChoice == 1 ? Colors.white : Colors.black,
                       onPressed: () {
                         setState(() {
                           filterChoice = 1;
                         });
                       },
                       child:
-                      Text("Alfabetiskt", style: TextStyle(fontSize: 15)),
+                          Text("Alfabetiskt", style: TextStyle(fontSize: 15)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18.0),
                       ),
@@ -234,7 +249,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                     child: RaisedButton(
                       color: filterChoice == 2 ? Colors.blue : Colors.grey,
                       textColor:
-                      filterChoice == 2 ? Colors.white : Colors.black,
+                          filterChoice == 2 ? Colors.white : Colors.black,
                       onPressed: () {
                         setState(() {
                           filterChoice = 2;
@@ -252,7 +267,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                     child: RaisedButton(
                       color: filterChoice == 3 ? Colors.blue : Colors.grey,
                       textColor:
-                      filterChoice == 3 ? Colors.white : Colors.black,
+                          filterChoice == 3 ? Colors.white : Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18.0),
                       ),

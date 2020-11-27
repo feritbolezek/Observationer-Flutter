@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/display_image.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
+import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -35,6 +36,8 @@ class _AddObservationState extends State<AddObservation> {
   String title;
   String desc;
   Position pos;
+
+  bool _share = false;
 
   List<String> imagesTakenPath;
   bool _leave = false;
@@ -159,13 +162,36 @@ class _AddObservationState extends State<AddObservation> {
                         } else {
                           if (_uploadBtnIsEnabled) {
                             _disableAddButton();
-                            insertObservation(_key);
+                            if (_share)
+                              insertObservation(_key);
+                            else
+                              createLocalObservation();
                           }
                         }
                       },
                     ),
                   ],
-                )
+                ),
+                SizedBox(
+                  height: 32,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Dela med andra",
+                      style: TextStyle(
+                          fontSize: 14.0, fontWeight: FontWeight.bold),
+                    ),
+                    Switch(
+                        value: _share,
+                        onChanged: (val) {
+                          setState(() {
+                            _share = val;
+                          });
+                        }),
+                  ],
+                ),
               ],
             ),
           ),
@@ -183,6 +209,24 @@ class _AddObservationState extends State<AddObservation> {
   void _disableAddButton() {
     setState(() {
       _uploadBtnIsEnabled = false;
+    });
+  }
+
+  void createLocalObservation() async {
+    LocalFileManager localFileManager = LocalFileManager();
+
+    Observation obs = Observation(
+        subject: title,
+        body: desc,
+        created: DateTime.now().toString(),
+        latitude: pos == null ? 0.0 : pos.latitude,
+        longitude: pos == null ? 0.0 : pos.longitude,
+        imageUrl: imagesTakenPath);
+
+    await localFileManager.saveObservationLocally(obs).then((value) {
+      _key.currentState.showSnackBar(
+          SnackBar(content: Text("Observationen har sparats lokalt!")));
+      _enableAddButton();
     });
   }
 

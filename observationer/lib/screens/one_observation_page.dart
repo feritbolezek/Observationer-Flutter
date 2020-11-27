@@ -1,8 +1,12 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
+import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
 import 'bottom_nav_bar.dart';
 import 'message_dialog.dart';
@@ -306,14 +310,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height * 0.25,
             margin: const EdgeInsets.only(right: 20.0),
-            child: Image.network(
-              //Displays first image
-              obs.imageUrl[0],
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace stackTrace) {
-                return observationWithoutImage();
-              },
-            ),
+            child: obs.local
+                ? getLocalImage()
+                : Image.network(
+                    //Displays first image
+                    obs.imageUrl[0],
+                    errorBuilder: (BuildContext context, Object exception,
+                        StackTrace stackTrace) {
+                      return observationWithoutImage();
+                    },
+                  ),
           ),
           Align(
             alignment: Alignment(-0.9, -0.9),
@@ -322,6 +328,13 @@ class _OneObservationPageState extends State<OneObservationPage> {
         ],
       ),
     );
+  }
+
+  Widget getLocalImage() {
+    if (obs.imageUrl.isNotEmpty)
+      return Image.memory(base64Decode(obs.imageUrl[0]));
+    else
+      return observationWithoutImage();
   }
 
   Widget observationWithoutImage() {
@@ -729,6 +742,21 @@ class _OneObservationPageState extends State<OneObservationPage> {
   }
 
   void updateObservation(key) {
+    if (obs.local) {
+      print("Updating: ${obs.localId} with text: ${initialTextTitle}");
+      LocalFileManager().updateObservation(Observation(
+          id: obs.id,
+          subject: initialTextTitle,
+          body: initialTextBody,
+          created: obs.created,
+          latitude: obs.latitude,
+          longitude: obs.longitude,
+          local: true,
+          localId: obs.localId,
+          imageUrl: obs.imageUrl));
+      return;
+    }
+
     ObservationsAPI.updateObservation(
       id: obs.id,
       title: initialTextTitle,
@@ -746,6 +774,11 @@ class _OneObservationPageState extends State<OneObservationPage> {
   }
 
   void removeObservation(key) {
+    if (obs.local) {
+      LocalFileManager().removeObservation(obs.localId);
+      return;
+    }
+
     ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
       String response = result.toString();
       if (response == "204")
