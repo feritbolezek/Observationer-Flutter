@@ -22,6 +22,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
   bool _permission = false;
   LatLng cords;
   String search;
+  bool showErrorDialog = true;
 
   /* //Refresh button doesn't work if you only fetch observations in initState()
   @override
@@ -32,7 +33,9 @@ class _ObservationsPageState extends State<ObservationsPage> {
 */
   //Refresh when swiping
   Future<Null> refreshList() async {
-    setState(() {});
+    setState(() {
+      showErrorDialog = true;
+    });
   }
 
   Future<void> _getCurrentLocation() async {
@@ -86,7 +89,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
               icon: const Icon(Icons.refresh),
               tooltip: 'Refresh page',
               onPressed: () {
-                setState(() {});
+                refreshList();
               },
             ),
           ],
@@ -103,12 +106,15 @@ class _ObservationsPageState extends State<ObservationsPage> {
                   future: futureObservation = ObservationsAPI()
                       .fetchObservations(filterChoice, cords, search,
                           (statusCode) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) =>
-                        MessageDialog().buildDialog(
-                            context,
-                            "Kunde ej hämta observationer",
-                            "Fel i anslutningen till databasen",
-                            true));
+                    if (showErrorDialog) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) =>
+                          MessageDialog().buildDialog(
+                              context,
+                              "Kunde ej hämta observationer",
+                              "Fel i anslutningen till databasen",
+                              true));
+                      showErrorDialog = false;
+                    }
                   }),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
@@ -170,7 +176,8 @@ class _ObservationsPageState extends State<ObservationsPage> {
               style: TextStyle(color: Colors.deepPurple[700]),
             )
           : Text(""),
-      isThreeLine: true, //Gives each item more space
+      isThreeLine: true,
+      //Gives each item more space
       onTap: () {
         navigateSecondPage();
       },
