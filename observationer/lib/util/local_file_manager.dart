@@ -19,6 +19,7 @@ class LocalFileManager {
         .create(recursive: true);
   }
 
+  /// Given [observation] saves all the data locally on the device.
   Future<void> saveObservationLocally(Observation observation) async {
     final file = await _localFile;
 
@@ -27,6 +28,9 @@ class LocalFileManager {
     return file.writeAsString('$data');
   }
 
+  @Deprecated('Will probably be removed.')
+
+  /// Given [id] reads data from the device.
   Future<String> readLocalObservations(String id) async {
     try {
       final file = await _localFile;
@@ -39,6 +43,7 @@ class LocalFileManager {
     }
   }
 
+  /// Reads in all the observations saved locally on the device.
   Future<List<Observation>> readAllLocalObservations() async {
     final path = await _localPath;
     var dir = new Directory('$path/observations/');
@@ -82,11 +87,13 @@ class LocalFileManager {
         localId: localId);
   }
 
+  /// Removes the observation with [localId]
   Future<void> removeObservation(String localId) async {
     final path = await _localPath;
     await File('$path/observations/$localId.txt').delete();
   }
 
+  /// Updates observation with data passed in with [observation]
   Future<void> updateObservation(Observation observation) async {
     final path = await _localPath;
     final file = await File('$path/observations/${observation.localId}.txt')
