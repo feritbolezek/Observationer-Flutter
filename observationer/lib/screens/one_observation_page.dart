@@ -416,14 +416,13 @@ class _OneObservationPageState extends State<OneObservationPage> {
     return ButtonBar(mainAxisSize: MainAxisSize.min,
         // this will take space as minimum as posible(to center)
         children: <Widget>[
-          new RaisedButton(
+          new ElevatedButton(
               onPressed: () {
                 buildDialog(context);
               },
-              color: Colors.red[400],
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18.0),
-                  side: BorderSide(color: Colors.red[400])),
+              style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.red[400])),
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Container(
@@ -446,14 +445,13 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   ),
                 ),
               )),
-          new RaisedButton(
+          new ElevatedButton(
               onPressed: () {
                 updateObservation(_key);
               },
-              color: Theme.of(context).accentColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18.0),
-                  side: BorderSide(color: Theme.of(context).accentColor)),
+              style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.blue[400])),
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Container(
@@ -749,8 +747,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
           subject: initialTextTitle,
           body: initialTextBody,
           created: obs.created,
-          latitude: obs.latitude,
-          longitude: obs.longitude,
+          latitude: double.parse(initialTextLatitude),
+          longitude: double.parse(initialTextLatitude),
           local: true,
           localId: obs.localId,
           imageUrl: obs.imageUrl));
