@@ -9,6 +9,7 @@ import 'package:observationer/screens/add_observation.dart';
 import 'package:observationer/screens/android_input_dialog.dart';
 import 'package:observationer/screens/ios_input_dialog.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/location_manager.dart';
 import 'package:observationer/util/observations_api.dart';
 import 'bottom_nav_bar.dart';
