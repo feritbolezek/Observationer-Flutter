@@ -9,7 +9,9 @@ class Observation {
       this.created,
       this.longitude,
       this.latitude,
-      this.imageUrl});
+      this.imageUrl,
+      this.local,
+      this.localId});
 
   final int id;
   final String subject;
@@ -18,4 +20,6 @@ class Observation {
   final double longitude;
   final double latitude;
   List<String> imageUrl;
+  final bool local;
+  final String localId;
 }

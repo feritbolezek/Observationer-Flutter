@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'file_name.dart';
 
 class LocalFileManager {
   Future<String> get _localPath async {
@@ -40,6 +41,49 @@ class LocalFileManager {
       // If encountering an error, return 0.
       return null;
     }
+  }
+
+  Future<List<Observation>> readAllLocalObservations() async {
+    final path = await _localPath;
+    var dir = new Directory('$path/observations/');
+    List<Observation> observations = [];
+
+    List obs = dir.listSync();
+    for (var file in obs) {
+      // could be directory (shouldn't be though)
+      if (file is File) {
+        List<String> contents = await file.readAsLines();
+
+        observations.add(extractToObservation(contents, file.name));
+      }
+    }
+    return observations;
+  }
+
+  /// Takes a string and converts it to an observation.
+  Observation extractToObservation(List<String> lines, String localId) {
+    String subject = lines[0].substring("subject:".length);
+    String desc = lines[1].substring("body:".length);
+    String created = lines[2].substring("created:".length);
+    double longitude = double.parse(lines[3].substring("longitude:".length));
+    double latitude = double.parse(lines[4].substring("latitude:".length));
+    List<String> b64Images = [];
+
+    if (lines.length > 5) {
+      for (int i = 5; i < lines.length; i++) {
+        b64Images.add(lines[i].substring("image:".length));
+      }
+    }
+
+    return Observation(
+        subject: subject,
+        body: desc,
+        created: created,
+        longitude: longitude,
+        latitude: latitude,
+        imageUrl: b64Images,
+        local: true,
+        localId: localId);
   }
 
   Future<String> _FormatText(Observation observation) async {

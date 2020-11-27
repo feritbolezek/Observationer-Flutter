@@ -9,7 +9,6 @@ import 'package:observationer/screens/display_image.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
-import 'package:observationer/util/temp_images.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'message_dialog.dart';

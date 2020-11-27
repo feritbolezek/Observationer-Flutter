@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -306,14 +309,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height * 0.25,
             margin: const EdgeInsets.only(right: 20.0),
-            child: Image.network(
-              //Displays first image
-              obs.imageUrl[0],
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace stackTrace) {
-                return observationWithoutImage();
-              },
-            ),
+            child: obs.local
+                ? getLocalImage()
+                : Image.network(
+                    //Displays first image
+                    obs.imageUrl[0],
+                    errorBuilder: (BuildContext context, Object exception,
+                        StackTrace stackTrace) {
+                      return observationWithoutImage();
+                    },
+                  ),
           ),
           Align(
             alignment: Alignment(-0.9, -0.9),
@@ -322,6 +327,13 @@ class _OneObservationPageState extends State<OneObservationPage> {
         ],
       ),
     );
+  }
+
+  Widget getLocalImage() {
+    if (obs.imageUrl.isNotEmpty)
+      return Image.memory(base64Decode(obs.imageUrl[0]));
+    else
+      return observationWithoutImage();
   }
 
   Widget observationWithoutImage() {
@@ -746,6 +758,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
   }
 
   void removeObservation(key) {
+    if (obs.local) {}
+
     ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
       String response = result.toString();
       if (response == "204")
