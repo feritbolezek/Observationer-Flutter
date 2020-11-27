@@ -86,6 +86,11 @@ class LocalFileManager {
         localId: localId);
   }
 
+  Future<void> removeObservation(String localId) async {
+    final path = await _localPath;
+    await File('$path/observations/$localId.txt').delete();
+  }
+
   Future<String> _FormatText(Observation observation) async {
     StringBuffer stringBuffer = StringBuffer();
     stringBuffer.write("subject:");

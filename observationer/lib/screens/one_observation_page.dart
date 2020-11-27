@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
+import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
 import 'bottom_nav_bar.dart';
 import 'message_dialog.dart';
@@ -758,7 +759,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
   }
 
   void removeObservation(key) {
-    if (obs.local) {}
+    if (obs.local) {
+      LocalFileManager().removeObservation(obs.localId);
+      return;
+    }
 
     ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
       String response = result.toString();

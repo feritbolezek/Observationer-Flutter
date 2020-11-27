@@ -2,6 +2,7 @@ import 'dart:io';
 
 extension FileExtention on FileSystemEntity {
   String get name {
-    return this?.path?.split("/")?.last;
+    String filename = this?.path?.split("/")?.last;
+    return filename.substring(0, filename.length - 4);
   }
 }
