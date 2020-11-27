@@ -22,9 +22,7 @@ class LocalFileManager {
   Future<void> saveObservationLocally(Observation observation) async {
     final file = await _localFile;
 
-    // Write the file.
-
-    String data = await _FormatText(observation);
+    String data = await _FormatText(observation, false);
 
     return file.writeAsString('$data');
   }
@@ -33,12 +31,10 @@ class LocalFileManager {
     try {
       final file = await _localFile;
 
-      // Read the file.
       String contents = await file.readAsString();
 
       return contents;
     } catch (e) {
-      // If encountering an error, return 0.
       return null;
     }
   }
@@ -91,7 +87,19 @@ class LocalFileManager {
     await File('$path/observations/$localId.txt').delete();
   }
 
-  Future<String> _FormatText(Observation observation) async {
+  Future<void> updateObservation(Observation observation) async {
+    final path = await _localPath;
+    final file = await File('$path/observations/${observation.localId}.txt')
+        .create(recursive: true);
+    print("Opened file: ${file.path} and writing: ${observation.subject}");
+    String data = await _FormatText(observation, true);
+
+    print("the data: $data");
+
+    return file.writeAsString('$data');
+  }
+
+  Future<String> _FormatText(Observation observation, bool isInBase64) async {
     StringBuffer stringBuffer = StringBuffer();
     stringBuffer.write("subject:");
     stringBuffer.write(observation.subject == null ? "" : observation.subject);
@@ -112,9 +120,14 @@ class LocalFileManager {
     stringBuffer.write("\n");
 
     if (observation.imageUrl != null && observation.imageUrl.isNotEmpty) {
-      final b64EncodedImgs = await getInBase64(observation.imageUrl);
+      var imgs;
 
-      for (String img in b64EncodedImgs) {
+      if (!isInBase64)
+        imgs = await getInBase64(observation.imageUrl);
+      else
+        imgs = observation.imageUrl;
+
+      for (String img in imgs) {
         stringBuffer.write("image:");
         stringBuffer.write(img);
         stringBuffer.write("\n");

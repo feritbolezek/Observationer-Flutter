@@ -742,6 +742,21 @@ class _OneObservationPageState extends State<OneObservationPage> {
   }
 
   void updateObservation(key) {
+    if (obs.local) {
+      print("Updating: ${obs.localId} with text: ${initialTextTitle}");
+      LocalFileManager().updateObservation(Observation(
+          id: obs.id,
+          subject: initialTextTitle,
+          body: initialTextBody,
+          created: obs.created,
+          latitude: obs.latitude,
+          longitude: obs.longitude,
+          local: true,
+          localId: obs.localId,
+          imageUrl: obs.imageUrl));
+      return;
+    }
+
     ObservationsAPI.updateObservation(
       id: obs.id,
       title: initialTextTitle,
