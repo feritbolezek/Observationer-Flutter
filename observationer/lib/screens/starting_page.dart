@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-
+import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'emergency_camera.dart';
 import 'map_view.dart';
 import 'observations_page.dart';
 
 /// The starting page of the application.
 class StartingPage extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,9 +24,13 @@ class StartingPage extends StatelessWidget {
       ),
     );
   }
+
+
 }
 
 class StartingPageBody extends StatelessWidget {
+  String s = "";
+      Position pos = null;
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -46,15 +52,33 @@ class StartingPageBody extends StatelessWidget {
                 fontWeight: FontWeight.bold),
           ),
           Spacer(flex: 2),
-          IconButton(
-            icon: Icon(Icons.add_a_photo),
-            iconSize: 50,
-            color: Colors.blue.shade400,
-            onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => EmergencyCamera()));
-            },
+          Material(
+              type: MaterialType.transparency, //Makes it usable on any background color, thanks @IanSmith
+              child: Ink(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.indigoAccent, width: 4.0),
+                  color: Colors.indigo[700],
+                  shape: BoxShape.circle,
+                ),
+                child: InkWell(
+                  //This keeps the splash effect within the circle
+                  borderRadius: BorderRadius.circular(1000.0), //Something large to ensure a circle
+                  onTap: () =>{
+                  Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => EmergencyCamera()))
+                  },
+                  child: Padding(
+                    padding:EdgeInsets.all(10.0),
+                    child: Icon(
+                      Icons.add_a_photo,
+                      size: 30.0,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              )
           ),
+
           Spacer(flex: 2),
 
           Container(
@@ -115,4 +139,31 @@ class StartingPageBody extends StatelessWidget {
       ),
     );
   }
+
+  getVal() async {
+    await getImage();
+  }
+
+  getImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.getImage(source: ImageSource.camera);
+
+    if(pickedFile!= null ){
+      s = pickedFile.path;
+    }
+
+
+
+
+
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    pos = position;
+
+
+
+  }
+
+
+
 }
