@@ -11,19 +11,33 @@ class EmergencyCamera extends StatefulWidget {
 
 class _EmergencyCamera extends State<EmergencyCamera> {
   final picker = ImagePicker();
+  int i = 0;
 
   getImage() async {
     final pickedFile = await picker.getImage(source: ImageSource.camera);
-
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (BuildContext context) => AddObservation.xd(position, pickedFile.path)));
+    if(pickedFile!= null ){
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (BuildContext context) => AddObservation.xd(position, pickedFile.path)));
+    } else{
+      Navigator.of(context).pop();
+      //getImage();
+    }
+
+
+
+
+
+
+
+
 
   }
 
   @override
   Widget build(BuildContext context) {
+
 
    getImage();
     return Scaffold(
@@ -32,6 +46,7 @@ class _EmergencyCamera extends State<EmergencyCamera> {
         child: CircularProgressIndicator()
 
       ),
+
 
     );
   }
