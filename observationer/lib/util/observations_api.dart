@@ -24,8 +24,6 @@ class ObservationsAPI {
 
     observations.addAll(obs);
 
-    print("We got someting?: ${observations.length}");
-
     var data = await http
         .get('https://saabstudent2020.azurewebsites.net/observation/');
 
@@ -38,8 +36,12 @@ class ObservationsAPI {
             subject: jsonData[i]['subject'],
             body: jsonData[i]['body'],
             created: jsonData[i]['created'],
-            longitude: jsonData[i]['position']['longitude'],
-            latitude: jsonData[i]['position']['latitude'],
+            longitude: jsonData[i]['position'] == null
+                ? 0.0
+                : jsonData[i]['position']['longitude'],
+            latitude: jsonData[i]['position'] == null
+                ? 0.0
+                : jsonData[i]['position']['latitude'],
             imageUrl: [''],
             local: false);
 

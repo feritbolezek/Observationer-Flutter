@@ -111,7 +111,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                           MessageDialog().buildDialog(
                               context,
                               "Kunde ej hämta observationer",
-                              "Fel i anslutningen till databasen",
+                              "Fel i anslutningen till databasen, felkod: $statusCode",
                               true));
                       showErrorDialog = false;
                     }
@@ -120,6 +120,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                     if (snapshot.hasData) {
                       return _buildListView(snapshot);
                     } else if (snapshot.hasError) {
+                      print("ERROR: ${snapshot.error.toString()}");
                       WidgetsBinding.instance.addPostFrameCallback((_) =>
                           MessageDialog().buildDialog(
                               context,
