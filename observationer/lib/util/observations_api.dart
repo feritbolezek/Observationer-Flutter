@@ -63,7 +63,9 @@ class ObservationsAPI {
         //Sort by date, newest first. This is the default.
         case 2:
           {
-            //Do nothing
+            observations.sort((a, b) =>
+                DateTime.parse(formatDateForSorting(b.created)).compareTo(
+                    DateTime.parse(formatDateForSorting(a.created))));
           }
           break;
         //Sort by closest distance to current GPS-position
@@ -92,6 +94,13 @@ class ObservationsAPI {
       }
     }
     return observations;
+  }
+
+  String formatDateForSorting(String created) {
+    String string = created;
+    String date = string.substring(0, 10);
+    String time = string.substring(11, 19);
+    return date + ' ' + time + 'Z';
   }
 
   Future<List<String>> fetchObservationImages(Observation observation) async {
