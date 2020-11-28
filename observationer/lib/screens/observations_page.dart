@@ -225,70 +225,63 @@ class _ObservationsPageState extends State<ObservationsPage> {
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Text(
                 'Sortera',
                 style: TextStyle(fontSize: 15),
               ),
-              ButtonBar(
-                children: <Widget>[
-                  ButtonTheme(
-                    minWidth: 100.0,
-                    height: 25.0,
-                    child: RaisedButton(
-                      color: filterChoice == 1 ? Colors.blue : Colors.grey,
-                      textColor:
-                          filterChoice == 1 ? Colors.white : Colors.black,
-                      onPressed: () {
-                        setState(() {
-                          filterChoice = 1;
-                        });
-                      },
-                      child:
-                          Text("Alfabetiskt", style: TextStyle(fontSize: 15)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
-                      ),
-                    ),
+              ButtonTheme(
+                minWidth: 100.0,
+                height: 25.0,
+                child: RaisedButton(
+                  color: filterChoice == 1 ? Colors.blue : Colors.grey[300],
+                  textColor: filterChoice == 1 ? Colors.white : Colors.black,
+                  onPressed: () {
+                    setState(() {
+                      filterChoice = 1;
+                    });
+                  },
+                  child: Text("Alfabetiskt", style: TextStyle(fontSize: 15)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
                   ),
-                  ButtonTheme(
-                    minWidth: 100.0,
-                    height: 25.0,
-                    child: RaisedButton(
-                      color: filterChoice == 2 ? Colors.blue : Colors.grey,
-                      textColor:
-                          filterChoice == 2 ? Colors.white : Colors.black,
-                      onPressed: () {
-                        setState(() {
-                          filterChoice = 2;
-                        });
-                      },
-                      child: Text("Datum", style: TextStyle(fontSize: 15)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
-                      ),
-                    ),
+                ),
+              ),
+              ButtonTheme(
+                minWidth: 100.0,
+                height: 25.0,
+                child: RaisedButton(
+                  color: filterChoice == 2 ? Colors.blue : Colors.grey[300],
+                  textColor: filterChoice == 2 ? Colors.white : Colors.black,
+                  onPressed: () {
+                    setState(() {
+                      filterChoice = 2;
+                    });
+                  },
+                  child: Text("Datum", style: TextStyle(fontSize: 15)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
                   ),
-                  ButtonTheme(
-                    minWidth: 100.0,
-                    height: 25.0,
-                    child: RaisedButton(
-                      color: filterChoice == 3 ? Colors.blue : Colors.grey,
-                      textColor:
-                          filterChoice == 3 ? Colors.white : Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
-                      ),
-                      onPressed: () async {
-                        await _getCurrentLocation();
-                        setState(() {
-                          filterChoice = 3;
-                        });
-                      },
-                      child: Text("Närmaste", style: TextStyle(fontSize: 15)),
-                    ),
+                ),
+              ),
+              ButtonTheme(
+                minWidth: 100.0,
+                height: 25.0,
+                child: RaisedButton(
+                  color: filterChoice == 3 ? Colors.blue : Colors.grey[300],
+                  textColor: filterChoice == 3 ? Colors.white : Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
                   ),
-                ],
+                  onPressed: () async {
+                    await _getCurrentLocation();
+                    setState(() {
+                      filterChoice = 3;
+                    });
+                  },
+                  child: Text("Närmaste", style: TextStyle(fontSize: 15)),
+                ),
               ),
             ],
           )
