@@ -35,6 +35,8 @@ class _ObservationsPageState extends State<ObservationsPage> {
   Future<Null> refreshList() async {
     setState(() {
       showErrorDialog = true;
+      search = null;
+      filterChoice = 2;
     });
   }
 
