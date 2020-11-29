@@ -16,6 +16,7 @@ class ObservationsPage extends StatefulWidget {
 }
 
 class _ObservationsPageState extends State<ObservationsPage> {
+  GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
   Future<List<Observation>> futureObservation;
   int filterChoice = 2;
   LocationManager _locationManager;
@@ -42,7 +43,6 @@ class _ObservationsPageState extends State<ObservationsPage> {
 
   Future<void> _getCurrentLocation() async {
     Position pos;
-    Stopwatch stopwatch = new Stopwatch()..start();
     _locationManager = LocationManager();
 
     _permission = await _locationManager.checkPermission();
@@ -53,7 +53,6 @@ class _ObservationsPageState extends State<ObservationsPage> {
       pos = await Geolocator.getLastKnownPosition() ??
           await _locationManager.getCurrentLocation();
       cords = LatLng(pos.latitude, pos.longitude);
-      print('doSomething() executed in ${stopwatch.elapsed}');
     } else {
       bool request = await _locationManager.requestPermission();
       if (request) {
@@ -68,6 +67,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+        key: _key,
         appBar: AppBar(
           centerTitle: true,
           title: Row(
@@ -160,12 +160,13 @@ class _ObservationsPageState extends State<ObservationsPage> {
     String lat = obs.latitude.toString() ?? "";
 
     FutureOr onGoBack(dynamic value) {
+      print('refresh');
       refreshList();
     }
 
     void navigateSecondPage() {
       Route route =
-          MaterialPageRoute(builder: (context) => OneObservationPage(obs));
+          MaterialPageRoute(builder: (context) => OneObservationPage(obs, _key));
       Navigator.push(context, route).then(onGoBack);
     }
 
@@ -278,9 +279,11 @@ class _ObservationsPageState extends State<ObservationsPage> {
                   ),
                   onPressed: () async {
                     await _getCurrentLocation();
-                    setState(() {
-                      filterChoice = 3;
-                    });
+                    if(_permission){
+                      setState(() {
+                        filterChoice = 3;
+                      });
+                    }
                   },
                   child: Text("Närmaste", style: TextStyle(fontSize: 15)),
                 ),
