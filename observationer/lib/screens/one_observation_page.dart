@@ -502,10 +502,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               new ElevatedButton(
-                                  onPressed: () => {
+                                  onPressed: () async => {
+                                        await removeObservation(_keyDelete),
                                         Navigator.pop(context),
                                         Navigator.pop(context),
-                                        removeObservation(_keyDelete),
                                       },
                                   style: ElevatedButton.styleFrom(
                                     primary: Colors.blue,
@@ -787,7 +787,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
     });
   }
 
-  void removeObservation(key) {
+  Future<void> removeObservation(key) async {
     if (obs.local) {
       LocalFileManager().removeObservation(obs.localId);
       //Shouldnt be possible to fail with a local observation
@@ -796,7 +796,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
       return;
     }
 
-    ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
+    await ObservationsAPI.deleteObservation(obs.id.toString())
+        .then((var result) {
       String response = result.toString();
       if (response == "204")
         response = "Observationen har tagits bort.";
