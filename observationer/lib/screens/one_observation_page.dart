@@ -1,13 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:camera/camera.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
+import 'add_observation.dart';
 import 'bottom_nav_bar.dart';
 import 'message_dialog.dart';
 
@@ -40,6 +44,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
   TextEditingController _editingControllerLatitude;
   TextEditingController _editingControllerLongitude;
   int _currentImg = 0;
+  static const int MAX_IMAGE_SIZE = 5000000; // 5 MB
 
   @override
   void initState() {
@@ -112,10 +117,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
                         alignment: Alignment.centerLeft,
                         child: Container(
                           margin: const EdgeInsets.only(left: 8.0),
-                          width: MediaQuery.of(context).size.width * 0.4,
+                          width: MediaQuery
+                              .of(context)
+                              .size
+                              .width * 0.4,
                         )),
                     Container(
-                        width: MediaQuery.of(context).size.width,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
                         margin: const EdgeInsets.only(top: 30.0),
                         child: Row(children: [
                           Text(
@@ -133,10 +144,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
                               })
                         ])),
                     Container(
-                        width: MediaQuery.of(context).size.width,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
                         child: _editBody()),
                     Container(
-                        width: MediaQuery.of(context).size.width,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
                         margin: const EdgeInsets.only(top: 30.0),
                         child: Row(children: [
                           Text(
@@ -148,10 +165,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
                         ])),
                     Container(
                         alignment: Alignment.centerLeft,
-                        width: MediaQuery.of(context).size.width,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
                         child: _editLatitude()),
                     Container(
-                        width: MediaQuery.of(context).size.width,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
                         margin: const EdgeInsets.only(top: 5.0),
                         child: Row(children: [
                           Text(
@@ -163,11 +186,20 @@ class _OneObservationPageState extends State<OneObservationPage> {
                         ])),
                     Container(
                         alignment: Alignment.centerLeft,
-                        width: MediaQuery.of(context).size.width,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
                         child: _editLongitude()),
                     Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.35,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
+                        height: MediaQuery
+                            .of(context)
+                            .size
+                            .height * 0.35,
                         margin: const EdgeInsets.only(top: 10.0),
                         child: mapView())
                   ])));
@@ -196,10 +228,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 height: 30.0,
                 child: Center(
                     child: Text(
-                  formatDate(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-                ))),
+                      formatDate(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                    ))),
             Container(height: 50.0, child: controllerButtons()),
           ]),
         ),
@@ -214,112 +246,137 @@ class _OneObservationPageState extends State<OneObservationPage> {
             context: context,
             barrierDismissible: true,
             builder: (context) {
-              return SimpleDialog(
-                backgroundColor: Colors.white,
-                children: [
-                  CarouselSlider(
-                    options: CarouselOptions(
-                        enableInfiniteScroll: false,
-                        height: MediaQuery.of(context).size.width,
-                        enlargeCenterPage: true,
-                        onPageChanged: (index, reason) {
-                          setState(() {
-                            _currentImg = index;
-                          });
-                        }),
-                    items: obs.imageUrl
-                        .map(
-                          (pics) => Center(
-                              widthFactor: 2.0,
-                              child: Image.network(
-                                pics,
-                                fit: BoxFit.cover,
-                                width: MediaQuery.of(context).size.width,
-                              )),
-                        )
-                        .toList(),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              return Container(//fixar bugg där simpledialog inte laddar? return SimpleDialog annars
+                height: MediaQuery.of(context).size.height,
+                  child:
+                  SimpleDialog(
+                    backgroundColor: Colors.white,
                     children: [
-                      Ink(
-                        decoration: ShapeDecoration(
-                          color: Colors.blue,
-                          shape: CircleBorder(),
-                        ),
-                        child: IconButton(
-                          icon: Icon(Icons.add),
-                          color: Colors.white,
-                          onPressed: () {
-                            if (obs.imageUrl.length < 7) {
-                              //bör vara parameter till photoGalleryDialog?
-                              PhotoGalleryDialog().buildDialog(context);
-                            } else {
-                              MessageDialog().buildDialog(context, "Fel",
-                                  "Max antal bilder är 7.", true);
-                            }
-                          },
-                        ),
-                      ),
-                      Ink(
-                          decoration: ShapeDecoration(
-                            color: Colors.blue,
-                            shape: CircleBorder(),
+                      Column(//fixar bugg där simpledialog inte laddar? ta bort dolumn annars
+                        children: [
+                          CarouselSlider(
+                            options: CarouselOptions(
+                                enableInfiniteScroll: false,
+                                height: MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width,
+                                enlargeCenterPage: true,
+                                onPageChanged: (index, reason) {
+                                  setState(() {
+                                    _currentImg = index;
+                                  });
+                                }),
+                            items:
+                            obs.imageUrl.map(
+                                  (pics) =>
+                                  Center(
+                                      widthFactor: 2.0,
+                                      child: Image.network(
+                                        pics,
+                                        fit: BoxFit.cover,
+                                        width: MediaQuery
+                                            .of(context)
+                                            .size
+                                            .width,
+                                      )),
+                            )
+                                .toList(),
                           ),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.delete_forever_outlined,
-                              color: Colors.white,
-                            ),
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: Text('Ta bort bild?'),
-                                      actions: [
-                                        FlatButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, false),
-                                          child: Text('Avbryt'),
-                                        ),
-                                        FlatButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: Text('Ta bort'))
-                                      ],
-                                    );
-                                  }).then((exit) {
-                                if (exit) {
-                                  obs.imageUrl.removeAt(_currentImg);
-                                  updateObservation(_key);
-                                }
-                              });
-                            },
-                          )),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Ink(
+                                decoration: ShapeDecoration(
+                                  color: Colors.blue,
+                                  shape: CircleBorder(),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.add),
+                                  color: Colors.white,
+                                  onPressed: () {
+                                    if (obs.imageUrl.length < 7) {
+                                      //bör vara parameter till photoGalleryDialog?
+                                      PhotoGalleryDialog(_goToCameraView, _picGallery)
+                                          .buildDialog(context);
+                                    } else {
+                                      MessageDialog().buildDialog(
+                                          context, "Fel",
+                                          "Max antal bilder är 7.", true);
+                                    }
+                                  },
+                                ),
+                              ),
+                              Ink(
+                                  decoration: ShapeDecoration(
+                                    color: Colors.blue,
+                                    shape: CircleBorder(),
+                                  ),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.delete_forever_outlined,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: Text('Ta bort bild?'),
+                                              actions: [
+                                                FlatButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          context, false),
+                                                  child: Text('Avbryt'),
+                                                ),
+                                                FlatButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            context, true),
+                                                    child: Text('Ta bort'))
+                                              ],
+                                            );
+                                          }).then((exit) {
+                                        if (exit) {
+                                          obs.imageUrl.removeAt(_currentImg);
+                                          //updateObservation(_key);
+                                        }
+                                      });
+                                    },
+                                  )),
+                            ],
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
               );
             });
       },
       child: Stack(
         children: <Widget>[
           Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.25,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
+            height: MediaQuery
+                .of(context)
+                .size
+                .height * 0.25,
             margin: const EdgeInsets.only(right: 20.0),
             child: obs.local
                 ? getLocalImage()
                 : Image.network(
-                    //Displays first image
-                    obs.imageUrl[0],
-                    errorBuilder: (BuildContext context, Object exception,
-                        StackTrace stackTrace) {
-                      return observationWithoutImage();
-                    },
-                  ),
+              //Displays first image
+              obs.imageUrl[0],
+              errorBuilder: (BuildContext context, Object exception,
+                  StackTrace stackTrace) {
+                return observationWithoutImage();
+              },
+            ),
           ),
           Align(
             alignment: Alignment(-0.9, -0.9),
@@ -341,9 +398,9 @@ class _OneObservationPageState extends State<OneObservationPage> {
     return Container(
       decoration: BoxDecoration(
           image: DecorationImage(
-        image: AssetImage('assets/images/Placeholder.png'),
-        fit: BoxFit.fill,
-      )),
+            image: AssetImage('assets/images/Placeholder.png'),
+            fit: BoxFit.fill,
+          )),
     );
   }
 
@@ -357,10 +414,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
               child: Container(
                 decoration: BoxDecoration(
                     image: DecorationImage(
-                  image: AssetImage('assets/images/Placeholder.png'),
-                  fit: BoxFit.none,
-                  alignment: Alignment.bottomRight,
-                )),
+                      image: AssetImage('assets/images/Placeholder.png'),
+                      fit: BoxFit.none,
+                      alignment: Alignment.bottomRight,
+                    )),
               )),
           Image.network(
             //Displays first image
@@ -404,9 +461,9 @@ class _OneObservationPageState extends State<OneObservationPage> {
       return Container(
         decoration: BoxDecoration(
             image: DecorationImage(
-          image: AssetImage('assets/images/Placeholder.png'),
-          fit: BoxFit.fill,
-        )),
+              image: AssetImage('assets/images/Placeholder.png'),
+              fit: BoxFit.fill,
+            )),
       );
     }
   }
@@ -422,7 +479,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
               },
               style: ButtonStyle(
                   backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.red[400])),
+                  MaterialStateProperty.all<Color>(Colors.red[400])),
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Container(
@@ -451,7 +508,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
               },
               style: ButtonStyle(
                   backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.blue[400])),
+                  MaterialStateProperty.all<Color>(Colors.blue[400])),
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Container(
@@ -493,11 +550,12 @@ class _OneObservationPageState extends State<OneObservationPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               new ElevatedButton(
-                                  onPressed: () => {
-                                        removeObservation(_key),
-                                        Navigator.of(context).pop(),
-                                        Navigator.pop(context)
-                                      },
+                                  onPressed: () =>
+                                  {
+                                    removeObservation(_key),
+                                    Navigator.of(context).pop(),
+                                    Navigator.pop(context)
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     primary: Colors.blue,
                                     textStyle: TextStyle(
@@ -505,7 +563,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
                                     ),
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
-                                            BorderRadius.circular(12.0)),
+                                        BorderRadius.circular(12.0)),
                                   ),
                                   child: Padding(
                                     padding: EdgeInsets.all(0),
@@ -520,9 +578,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                                     ),
                                   )),
                               new ElevatedButton(
-                                  onPressed: () => {
-                                        Navigator.of(context).pop(),
-                                      },
+                                  onPressed: () =>
+                                  {
+                                    Navigator.of(context).pop(),
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     primary: Colors.red,
                                     textStyle: TextStyle(
@@ -530,7 +589,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
                                     ),
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
-                                            BorderRadius.circular(12.0)),
+                                        BorderRadius.circular(12.0)),
                                   ),
                                   child: Padding(
                                     padding: EdgeInsets.all(0),
@@ -785,5 +844,60 @@ class _OneObservationPageState extends State<OneObservationPage> {
         response = "Borttagning misslyckades.";
       key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
+  }
+
+  Future<void> _picGallery() async {
+    final imageFile = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+    );
+    if (imageFile == null) {
+      print('img is null');
+      return;
+    }
+    setState(() {
+      String _image = imageFile.path;
+      _checkImageSize(_image).then((value) {
+        value
+            ? obs.imageUrl.add(_image)
+            : _key.currentState.showSnackBar(
+            SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
+      });
+      Navigator.of(context).pop(context);
+    });
+  }
+
+  Future<void> _goToCameraView() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    final cameras = await availableCameras();
+
+    var result = await Navigator.push(
+      this.context,
+      MaterialPageRoute(
+          builder: (context) => TakePictureScreen(camera: cameras.first)),
+    );
+
+    print(result);
+    print(obs.imageUrl.length);
+    if (result != null) {
+      _checkImageSize(result).then((value) {
+        setState(() {
+          value
+          ? obs.imageUrl.add(result)
+          : _key.currentState.showSnackBar(SnackBar(
+              content: Text("Fel: Bildstorleken överstiger 5 MB")));
+        Navigator.of(context).pop(context);
+        });
+      });
+    }
+    print(obs.imageUrl.length);
+  }
+
+  Future<bool> _checkImageSize(String path) async {
+    var image = File(path);
+    int size = await image.length();
+
+    return size < MAX_IMAGE_SIZE;
   }
 }
