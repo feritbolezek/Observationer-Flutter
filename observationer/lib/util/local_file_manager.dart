@@ -47,6 +47,9 @@ class LocalFileManager {
   Future<List<Observation>> readAllLocalObservations() async {
     final path = await _localPath;
     var dir = new Directory('$path/observations/');
+    bool exists = dir.existsSync();
+    if (!exists) return [];
+
     List<Observation> observations = [];
 
     List obs = dir.listSync();

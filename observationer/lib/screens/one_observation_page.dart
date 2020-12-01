@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:observationer/model/observation.dart';
@@ -12,24 +14,29 @@ import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
 import 'add_observation.dart';
+import 'package:observationer/util/position_input_formatter.dart';
 import 'bottom_nav_bar.dart';
 import 'message_dialog.dart';
 
 /// The view that displays specific/detailed data for a singular Observation.
 class OneObservationPage extends StatefulWidget {
-  OneObservationPage(this.obs);
+  OneObservationPage(this.obs, this._keyDelete);
 
+  final GlobalKey<ScaffoldState> _keyDelete;
   final Observation obs;
 
   @override
-  _OneObservationPageState createState() => _OneObservationPageState(obs);
+  _OneObservationPageState createState() =>
+      _OneObservationPageState(obs, _keyDelete);
 }
 
 class _OneObservationPageState extends State<OneObservationPage> {
-  _OneObservationPageState(this.obs);
+  _OneObservationPageState(this.obs, this._keyDelete);
 
   var _key = new GlobalKey<ScaffoldState>();
   Observation obs;
+  GlobalKey<ScaffoldState> _keyDelete;
+
   String initialTextTitle,
       initialTextBody,
       initialTextLatitude,
@@ -439,13 +446,14 @@ class _OneObservationPageState extends State<OneObservationPage> {
     return ButtonBar(mainAxisSize: MainAxisSize.min,
         // this will take space as minimum as posible(to center)
         children: <Widget>[
-          new ElevatedButton(
+          new RaisedButton(
               onPressed: () {
                 buildDialog(context);
               },
-              style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.red[400])),
+              color: Colors.red[400],
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18.0),
+                  side: BorderSide(color: Colors.red[400])),
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Container(
@@ -468,13 +476,14 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   ),
                 ),
               )),
-          new ElevatedButton(
+          new RaisedButton(
               onPressed: () {
                 updateObservation(_key);
               },
-              style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.blue[400])),
+              color: Theme.of(context).accentColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18.0),
+                  side: BorderSide(color: Theme.of(context).accentColor)),
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Container(
@@ -516,10 +525,10 @@ class _OneObservationPageState extends State<OneObservationPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               new ElevatedButton(
-                                  onPressed: () => {
-                                        removeObservation(_key),
-                                        Navigator.of(context).pop(),
-                                        Navigator.pop(context)
+                                  onPressed: () async => {
+                                        await removeObservation(_keyDelete),
+                                        Navigator.pop(context),
+                                        Navigator.pop(context),
                                       },
                                   style: ElevatedButton.styleFrom(
                                     primary: Colors.blue,
@@ -622,7 +631,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
           setState(() {
             initialTextBody = newValue;
             _editBodySwitch = false;
-            updateObservation(_key);
           });
         },
         autofocus: true,
@@ -647,7 +655,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
             setState(() {
               initialTextTitle = newValue;
               _isEditingText = false;
-              updateObservation(_key);
             });
           },
           autofocus: true,
@@ -682,12 +689,15 @@ class _OneObservationPageState extends State<OneObservationPage> {
       return TextField(
         maxLines: 1,
         keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
+          PositionInputFormatter(90.0, -90.0),
+        ],
         textInputAction: TextInputAction.done,
         onSubmitted: (newValue) {
           setState(() {
             initialTextLatitude = newValue;
             _editLatitudeSwitch = false;
-            updateObservation(_key);
           });
         },
         autofocus: true,
@@ -721,12 +731,15 @@ class _OneObservationPageState extends State<OneObservationPage> {
       return TextField(
         maxLines: 1,
         keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
+          PositionInputFormatter(180.0, -180.0),
+        ],
         textInputAction: TextInputAction.done,
         onSubmitted: (newValue) {
           setState(() {
             initialTextLongitude = newValue;
             _editLongitudeSwitch = false;
-            updateObservation(_key);
           });
         },
         autofocus: true,
@@ -775,16 +788,19 @@ class _OneObservationPageState extends State<OneObservationPage> {
           local: true,
           localId: obs.localId,
           imageUrl: obs.imageUrl));
+      //Shouldnt be possible to fail with a local observation
+      key.currentState.showSnackBar(
+          SnackBar(content: Text("Lokal observation har uppdaterats.")));
       return;
     }
 
     ObservationsAPI.updateObservation(
-      id: obs.id,
-      title: initialTextTitle,
-      description: initialTextBody,
-      latitude: obs.latitude,
-      longitude: obs.longitude,
-    ).then((var result) {
+            id: obs.id,
+            title: initialTextTitle,
+            description: initialTextBody,
+            latitude: double.parse(initialTextLatitude),
+            longitude: double.parse(initialTextLongitude))
+        .then((var result) {
       String response = result.toString();
       if (response == "204")
         response = "Observationen har uppdaterats.";
@@ -794,13 +810,17 @@ class _OneObservationPageState extends State<OneObservationPage> {
     });
   }
 
-  void removeObservation(key) {
+  Future<void> removeObservation(key) async {
     if (obs.local) {
       LocalFileManager().removeObservation(obs.localId);
+      //Shouldnt be possible to fail with a local observation
+      key.currentState.showSnackBar(
+          SnackBar(content: Text("Lokal observation har tagits bort.")));
       return;
     }
 
-    ObservationsAPI.deleteObservation(obs.id.toString()).then((var result) {
+    await ObservationsAPI.deleteObservation(obs.id.toString())
+        .then((var result) {
       String response = result.toString();
       if (response == "204")
         response = "Observationen har tagits bort.";

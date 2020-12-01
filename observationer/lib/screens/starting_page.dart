@@ -7,7 +7,6 @@ import 'observations_page.dart';
 
 /// The starting page of the application.
 class StartingPage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -24,36 +23,35 @@ class StartingPage extends StatelessWidget {
       ),
     );
   }
-
-
 }
 
 class StartingPageBody extends StatelessWidget {
   String s = "";
-      Position pos = null;
+  Position pos = null;
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Column(
         children: <Widget>[
-
-          Spacer(),
-
+          Spacer(
+            flex: 5,
+          ),
           Image(
             image: AssetImage('assets/images/obs_icon.png'),
             width: 120.0,
           ),
-
-          Text('Observationer',
+          Text(
+            'Observationer',
             style: TextStyle(
                 color: Color(0xFF6ACEF0),
                 fontSize: 26.0,
                 fontWeight: FontWeight.bold),
           ),
-          Spacer(flex: 2),
+          Spacer(flex: 6),
           Material(
-              type: MaterialType.transparency, //Makes it usable on any background color, thanks @IanSmith
+              type: MaterialType
+                  .transparency, //Makes it usable on any background color, thanks @IanSmith
               child: Ink(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.indigoAccent, width: 4.0),
@@ -62,13 +60,16 @@ class StartingPageBody extends StatelessWidget {
                 ),
                 child: InkWell(
                   //This keeps the splash effect within the circle
-                  borderRadius: BorderRadius.circular(1000.0), //Something large to ensure a circle
-                  onTap: () =>{
-                  Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => EmergencyCamera()))
+                  borderRadius: BorderRadius.circular(
+                      1000.0), //Something large to ensure a circle
+                  onTap: () => {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => EmergencyCamera()))
                   },
                   child: Padding(
-                    padding:EdgeInsets.all(10.0),
+                    padding: EdgeInsets.all(10.0),
                     child: Icon(
                       Icons.add_a_photo,
                       size: 30.0,
@@ -76,21 +77,19 @@ class StartingPageBody extends StatelessWidget {
                     ),
                   ),
                 ),
-              )
-          ),
-
-          Spacer(flex: 2),
-
+              )),
+          Spacer(flex: 6),
           Container(
             padding: EdgeInsets.symmetric(vertical: 5),
-            child: Text('Välkommen till Observationer!',
+            child: Text(
+              'Välkommen till Observationer!',
               style: TextStyle(
-                  color: Colors.white60,
+                  color: Colors.white,
                   fontSize: 17.0,
                   fontWeight: FontWeight.bold),
             ),
           ),
-
+          Spacer(),
           new ElevatedButton(
             style: ElevatedButton.styleFrom(
               primary: Colors.blue,
@@ -105,17 +104,37 @@ class StartingPageBody extends StatelessWidget {
                   context, MaterialPageRoute(builder: (context) => MapView()))
             },
           ),
-
+          Spacer(),
           Container(
             padding: EdgeInsets.symmetric(vertical: 3),
-            child: Text('eller',
-              style: TextStyle(
-                  color: Colors.white60,
-                  fontSize: 17.0,
-                  fontWeight: FontWeight.bold),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: Container(height: 1, color: Colors.white60),
+                ),
+                Flexible(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8, right: 8),
+                    child: Text(
+                      'ELLER',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17.0,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 2,
+                  child: Container(height: 1, color: Colors.white60),
+                ),
+              ],
             ),
           ),
-
+          Spacer(),
           new ElevatedButton(
             style: ElevatedButton.styleFrom(
               primary: Colors.blue,
@@ -132,9 +151,9 @@ class StartingPageBody extends StatelessWidget {
               );
             },
           ),
-
-          Spacer(),
-
+          Spacer(
+            flex: 2,
+          ),
         ],
       ),
     );
@@ -148,22 +167,13 @@ class StartingPageBody extends StatelessWidget {
     final picker = ImagePicker();
     final pickedFile = await picker.getImage(source: ImageSource.camera);
 
-    if(pickedFile!= null ){
+    if (pickedFile != null) {
       s = pickedFile.path;
     }
 
-
-
-
-
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
 
     pos = position;
-
-
-
   }
-
-
-
 }
