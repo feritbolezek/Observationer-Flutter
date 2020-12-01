@@ -1,15 +1,19 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:camera/camera.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
+import 'add_observation.dart';
 import 'package:observationer/util/position_input_formatter.dart';
 import 'bottom_nav_bar.dart';
 import 'message_dialog.dart';
@@ -47,6 +51,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
   TextEditingController _editingControllerLatitude;
   TextEditingController _editingControllerLongitude;
   int _currentImg = 0;
+  static const int MAX_IMAGE_SIZE = 5000000; // 5 MB
 
   @override
   void initState() {
@@ -224,87 +229,105 @@ class _OneObservationPageState extends State<OneObservationPage> {
               return SimpleDialog(
                 backgroundColor: Colors.white,
                 children: [
-                  CarouselSlider(
-                    options: CarouselOptions(
-                        enableInfiniteScroll: false,
+                  Column(
+                    children: <Widget>[
+                      Container(
                         height: MediaQuery.of(context).size.width,
-                        enlargeCenterPage: true,
-                        onPageChanged: (index, reason) {
-                          setState(() {
-                            _currentImg = index;
-                          });
-                        }),
-                    items: obs.imageUrl
-                        .map(
-                          (pics) => Center(
-                              widthFactor: 2.0,
-                              child: Image.network(
-                                pics,
-                                fit: BoxFit.cover,
-                                width: MediaQuery.of(context).size.width,
-                              )),
-                        )
-                        .toList(),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Ink(
-                        decoration: ShapeDecoration(
-                          color: Colors.blue,
-                          shape: CircleBorder(),
-                        ),
-                        child: IconButton(
-                          icon: Icon(Icons.add),
-                          color: Colors.white,
-                          onPressed: () {
-                            if (obs.imageUrl.length < 7) {
-                              //bör vara parameter till photoGalleryDialog?
-                              PhotoGalleryDialog().buildDialog(context);
-                            } else {
-                              MessageDialog().buildDialog(context, "Fel",
-                                  "Max antal bilder är 7.", true);
-                            }
-                          },
+                        //This one doesn't affecting anything but is needed, otherwise doesnt work.
+                        width: MediaQuery.of(context).size.width,
+                        child: CarouselSlider(
+                          options: CarouselOptions(
+                              enableInfiniteScroll: false,
+                              height: MediaQuery.of(context).size.width,
+                              enlargeCenterPage: true,
+                              onPageChanged: (index, reason) {
+                                setState(() {
+                                  _currentImg = index;
+                                });
+                              }),
+                          items: obs.imageUrl
+                              .map(
+                                (pics) => Center(
+                                    widthFactor: 2.0,
+                                    child: Image.network(
+                                      pics,
+                                      fit: BoxFit.cover,
+                                      width: MediaQuery.of(context).size.width,
+                                    )),
+                              )
+                              .toList(),
                         ),
                       ),
-                      Ink(
-                          decoration: ShapeDecoration(
-                            color: Colors.blue,
-                            shape: CircleBorder(),
-                          ),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.delete_forever_outlined,
-                              color: Colors.white,
+                      Material(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Ink(
+                              height: 50,
+                              width: 50,
+                              decoration: ShapeDecoration(
+                                color: Colors.blue,
+                                shape: CircleBorder(),
+                              ),
+                              child: IconButton(
+                                icon: Icon(Icons.add),
+                                color: Colors.white,
+                                onPressed: () {
+                                  if (obs.imageUrl.length < 7) {
+                                    //bör vara parameter till photoGalleryDialog?
+                                    PhotoGalleryDialog(
+                                            _goToCameraView, _picGallery)
+                                        .buildDialog(context);
+                                  } else {
+                                    MessageDialog().buildDialog(context, "Fel",
+                                        "Max antal bilder är 7.", true);
+                                  }
+                                },
+                              ),
                             ),
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: Text('Ta bort bild?'),
-                                      actions: [
-                                        FlatButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, false),
-                                          child: Text('Avbryt'),
-                                        ),
-                                        FlatButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: Text('Ta bort'))
-                                      ],
-                                    );
-                                  }).then((exit) {
-                                if (exit) {
-                                  obs.imageUrl.removeAt(_currentImg);
-                                  updateObservation(_key);
-                                }
-                              });
-                            },
-                          )),
+                            Ink(
+                                height: 50,
+                                width: 50,
+                                decoration: ShapeDecoration(
+                                  color: Colors.red,
+                                  shape: CircleBorder(),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.delete_forever_outlined,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: Text('Ta bort bild?'),
+                                            actions: [
+                                              FlatButton(
+                                                onPressed: () => Navigator.pop(
+                                                    context, false),
+                                                child: Text('Avbryt'),
+                                              ),
+                                              FlatButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          context, true),
+                                                  child: Text('Ta bort'))
+                                            ],
+                                          );
+                                        }).then((exit) {
+                                      if (exit) {
+                                        obs.imageUrl.removeAt(_currentImg);
+                                        //updateObservation(_key);
+                                      }
+                                    });
+                                  },
+                                )),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -805,5 +828,60 @@ class _OneObservationPageState extends State<OneObservationPage> {
         response = "Borttagning misslyckades.";
       key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
+  }
+
+  Future<void> _picGallery() async {
+    final imageFile = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+    );
+    if (imageFile == null) {
+      print('img is null');
+      return;
+    }
+    setState(() {
+      String _image = imageFile.path;
+      _checkImageSize(_image).then((value) {
+        value
+            ? obs.imageUrl.add(_image)
+            : _key.currentState.showSnackBar(
+                SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
+      });
+      Navigator.of(context).pop(context);
+    });
+  }
+
+  Future<void> _goToCameraView() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    final cameras = await availableCameras();
+
+    var result = await Navigator.push(
+      this.context,
+      MaterialPageRoute(
+          builder: (context) => TakePictureScreen(camera: cameras.first)),
+    );
+
+    print(result);
+    print(obs.imageUrl.length);
+    if (result != null) {
+      _checkImageSize(result).then((value) {
+        setState(() {
+          value
+              ? obs.imageUrl.add(result)
+              : _key.currentState.showSnackBar(SnackBar(
+                  content: Text("Fel: Bildstorleken överstiger 5 MB")));
+          Navigator.of(context).pop(context);
+        });
+      });
+    }
+    print(obs.imageUrl.length);
+  }
+
+  Future<bool> _checkImageSize(String path) async {
+    var image = File(path);
+    int size = await image.length();
+
+    return size < MAX_IMAGE_SIZE;
   }
 }
