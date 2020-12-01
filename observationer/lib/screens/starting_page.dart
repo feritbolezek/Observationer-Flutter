@@ -49,35 +49,14 @@ class StartingPageBody extends StatelessWidget {
                 fontWeight: FontWeight.bold),
           ),
           Spacer(flex: 6),
-          Material(
-              type: MaterialType
-                  .transparency, //Makes it usable on any background color, thanks @IanSmith
-              child: Ink(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.indigoAccent, width: 4.0),
-                  color: Colors.indigo[700],
-                  shape: BoxShape.circle,
-                ),
-                child: InkWell(
-                  //This keeps the splash effect within the circle
-                  borderRadius: BorderRadius.circular(
-                      1000.0), //Something large to ensure a circle
-                  onTap: () => {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => EmergencyCamera()))
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.all(10.0),
-                    child: Icon(
-                      Icons.add_a_photo,
-                      size: 30.0,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              )),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => EmergencyCamera()));
+            },
+
+            child: Icon(Icons.add_a_photo),
+          ),
           Spacer(flex: 6),
           Container(
             padding: EdgeInsets.symmetric(vertical: 5),
