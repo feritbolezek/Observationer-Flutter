@@ -652,7 +652,8 @@ class _EditObservationPage extends State<EditObservationPage> {
           value
               ? obs.imageUrl.add(result)
               : _key.currentState.showSnackBar(SnackBar(
-                  content: Text("Fel: Bildstorleken överstiger 5 MB")));
+                  content: Text(
+                      "Fel: Bildstorleken överstiger ${MAX_IMAGE_SIZE / 1000000} MB")));
           Navigator.of(context).pop(context);
         });
       });
