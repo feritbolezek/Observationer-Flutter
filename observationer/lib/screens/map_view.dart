@@ -130,10 +130,11 @@ class _MapViewState extends State<MapView> {
 
   Future<void> _initMapAndLocationRequests() async {
     Position p = await _locationManager.getCurrentLocation();
-    List<Observation> observations =  await ObservationsAPI().fetchObservations(3, LatLng(p.latitude, p.longitude), "");
+    List<Observation> observations = await ObservationsAPI()
+        .fetchObservations(3, LatLng(p.latitude, p.longitude), "");
 
-    for(Observation obs in observations){
-      if(obs.latitude != null && obs.longitude != null){
+    for (Observation obs in observations) {
+      if (obs.latitude != null && obs.longitude != null) {
         markers.add(Marker(
           markerId: MarkerId(obs.id.toString()),
           position: LatLng(obs.latitude, obs.longitude),
@@ -141,7 +142,7 @@ class _MapViewState extends State<MapView> {
         ));
       }
     }
-    
+
     _googleMap = GoogleMap(
       myLocationEnabled: true,
       myLocationButtonEnabled: true,
@@ -204,7 +205,7 @@ class _MapViewState extends State<MapView> {
       body: VisibilityDetector(
         key: Key('map-view'),
         onVisibilityChanged: (visibilityInfo) {
-          if (visibilityInfo.visibleFraction == 1.0) {
+          if (visibilityInfo.visibleFraction == 1.0 && this.mounted) {
             _locationManager.getPositionUpdates((lat, long) {
               setState(() {
                 _cameraPosition = CameraPosition(
