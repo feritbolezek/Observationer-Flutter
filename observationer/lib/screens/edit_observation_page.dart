@@ -272,11 +272,11 @@ class _EditObservationPage extends State<EditObservationPage> {
                               child: IconButton(
                                 icon: Icon(Icons.add),
                                 color: Colors.white,
-                                onPressed: ()  {
+                                onPressed: () {
                                   if (obs.imageUrl.length < 7) {
                                     //bör vara parameter till photoGalleryDialog?
                                     PhotoGalleryDialog(
-                                             _goToCameraView, _picGallery)
+                                            _goToCameraView, _picGallery)
                                         .buildDialog(context);
                                   } else {
                                     MessageDialog().buildDialog(context, "Fel",
@@ -627,7 +627,8 @@ class _EditObservationPage extends State<EditObservationPage> {
           localId: obs.localId,
           imageUrl: obs.imageUrl));
       //Shouldnt be possible to fail with a local observation
-      Navigator.pop(context);
+      key.currentState
+          .showSnackBar(SnackBar(content: Text("Bilden har tagits bort.")));
       return;
     }
 
@@ -644,14 +645,12 @@ class _EditObservationPage extends State<EditObservationPage> {
   }
 
   Future<void> addObservationImage(key) async {
-
     await ObservationsAPI.addObservationImage(obs, imagesTakenPath)
         .then((var result) {
       String response = result.toString();
       if (response == "201") {
         response = "Bilden har lagts till.";
-      }
-      else
+      } else
         response = "Kunde inte lägga till bild.";
       key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
@@ -670,9 +669,12 @@ class _EditObservationPage extends State<EditObservationPage> {
       String _image = imageFile.path;
       _checkImageSize(_image).then((value) {
         value
-            ? obs.imageUrl.add(_image)
+            ? imagesTakenPath.add(_image)
             : _key.currentState.showSnackBar(
                 SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
+        if (value) {
+          addObservationImage(_key);
+        }
       });
       Navigator.of(context).pop(context);
     });
@@ -689,7 +691,6 @@ class _EditObservationPage extends State<EditObservationPage> {
           builder: (context) => TakePictureScreen(camera: cameras.first)),
     );
     print(result);
-    print(obs.imageUrl.length);
     if (result != null) {
       _checkImageSize(result).then((value) {
         setState(() {
@@ -699,12 +700,13 @@ class _EditObservationPage extends State<EditObservationPage> {
                   content: Text(
                       "Fel: Bildstorleken överstiger ${MAX_IMAGE_SIZE / 1000000} MB")));
           //Maybe not the best place to call addObservationImage, just testing for now though.
-          addObservationImage(_key);
+          if (value) {
+            addObservationImage(_key);
+          }
           Navigator.of(context).pop(context);
         });
       });
     }
-    print(obs.imageUrl.length);
   }
 
   Future<bool> _checkImageSize(String path) async {
