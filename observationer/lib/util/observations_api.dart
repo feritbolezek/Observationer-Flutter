@@ -25,9 +25,10 @@ class ObservationsAPI {
     observations.addAll(obs);
 
     var data = await http
-        .get('https://saabstudent2020.azurewebsites.net/observation/');
+        .get('https://saabstudent2020.azurewebsites.net/observation/')
+        .catchError((e) {});
 
-    if (data.statusCode == 200) {
+    if (data?.statusCode == 200) {
       var jsonData = json.decode(data.body);
       for (int i = jsonData.length - 1; i >= 0; i--) {
         //If the observation has image(s)
@@ -48,7 +49,7 @@ class ObservationsAPI {
         observations.add(obs);
       }
     } else {
-      onFailure(data.statusCode);
+      onFailure(data?.statusCode ?? 403);
       //throw Exception('Failed to load observations');
     }
     if (observations.isNotEmpty) {
