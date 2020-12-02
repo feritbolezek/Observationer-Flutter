@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:observationer/model/observation.dart';
 import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
 import 'bottom_nav_bar.dart';
-import 'message_dialog.dart';
+import 'edit_observation_page.dart';
 
 /// The view that displays specific/detailed data for a singular Observation.
 class OneObservationPage extends StatefulWidget {
@@ -195,7 +194,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
             Container(
                 height: 100.0,
                 child: Center(
-                  child: Expanded(child: _editTitleTextField()),
+                  child: Expanded(child: ),
                 )),
             Container(
                 height: 30.0,
@@ -221,7 +220,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
             builder: (context) {
               return SimpleDialog(
                 backgroundColor: Colors.white,
-                children: 
+                children: [
                   Container(
                     height: MediaQuery.of(context).size.width,
                     //This one doesn't affecting anything but is needed, otherwise doesnt work.
