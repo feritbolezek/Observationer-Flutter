@@ -113,7 +113,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
                             fontWeight: FontWeight.bold, fontSize: 17),
                       ),
                     ),
-                     Container(
+                    Container(
                       width: MediaQuery.of(context).size.width,
                       child: Text(
                         initialTextBody,
@@ -243,17 +243,29 @@ class _OneObservationPageState extends State<OneObservationPage> {
                               _currentImg = index;
                             });
                           }),
-                      items: obs.imageUrl
-                          .map(
-                            (pics) => Center(
-                                widthFactor: 2.0,
-                                child: Image.network(
-                                  pics,
-                                  fit: BoxFit.cover,
-                                  width: MediaQuery.of(context).size.width,
-                                )),
-                          )
-                          .toList(),
+                      items: obs.local
+                          ? obs.imageUrl
+                              .map(
+                                (pic) => Center(
+                                    widthFactor: 2.0,
+                                    child: Image.memory(
+                                      base64Decode(pic),
+                                      fit: BoxFit.cover,
+                                      width: MediaQuery.of(context).size.width,
+                                    )),
+                              )
+                              .toList()
+                          : obs.imageUrl
+                              .map(
+                                (pics) => Center(
+                                    widthFactor: 2.0,
+                                    child: Image.network(
+                                      pics,
+                                      fit: BoxFit.cover,
+                                      width: MediaQuery.of(context).size.width,
+                                    )),
+                              )
+                              .toList(),
                     ),
                   ),
                 ],
@@ -408,8 +420,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
           )
         ]);
   }
-  
-    void showEditScreen() async {
+
+  void showEditScreen() async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EditObservationPage(obs, _key)),
@@ -509,7 +521,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
         });
   }
 
-  
   GoogleMapController mapController;
   Widget mapView() {
     CameraPosition observationLocation;
@@ -549,7 +560,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
       ),
     );
   }
-
 
   String formatDate() {
     String string = obs.created;
