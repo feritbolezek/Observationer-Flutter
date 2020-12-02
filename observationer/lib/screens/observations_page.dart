@@ -37,7 +37,6 @@ class _ObservationsPageState extends State<ObservationsPage> {
     setState(() {
       showErrorDialog = true;
       search = null;
-      filterChoice = 2;
     });
   }
 
