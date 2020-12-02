@@ -1,22 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-
-import 'package:camera/camera.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:observationer/model/observation.dart';
-import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
-import 'add_observation.dart';
-import 'package:observationer/util/position_input_formatter.dart';
 import 'bottom_nav_bar.dart';
-import 'message_dialog.dart';
+import 'edit_observation_page.dart';
 
 /// The view that displays specific/detailed data for a singular Observation.
 class OneObservationPage extends StatefulWidget {
@@ -42,10 +32,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
       initialTextLatitude,
       initialTextLongitude;
   Future<List<String>> futureObservationImages;
-  bool _isEditingText = false;
-  bool _editBodySwitch = false;
-  bool _editLatitudeSwitch = false;
-  bool _editLongitudeSwitch = false;
   TextEditingController _editingControllerTitle;
   TextEditingController _editingControllerBody;
   TextEditingController _editingControllerLatitude;
@@ -90,15 +76,6 @@ class _OneObservationPageState extends State<OneObservationPage> {
   }
 
   @override
-  void dispose() {
-    _editingControllerTitle.dispose();
-    _editingControllerBody.dispose();
-    _editingControllerLatitude.dispose();
-    _editingControllerLongitude.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
         key: _key,
@@ -127,26 +104,27 @@ class _OneObservationPageState extends State<OneObservationPage> {
                           width: MediaQuery.of(context).size.width * 0.4,
                         )),
                     Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: const EdgeInsets.only(top: 30.0),
-                        child: Row(children: [
-                          Text(
-                            "Anteckningar",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 17),
-                          ),
-                          IconButton(
-                              icon: Icon(Icons.edit, color: Colors.grey[600]),
-                              onPressed: () {
-                                setState(() {
-                                  _editBodySwitch = !_editBodySwitch;
-                                });
-                              })
-                        ])),
-                    Container(
-                        width: MediaQuery.of(context).size.width,
-                        child: _editBody()),
+                      width: MediaQuery.of(context).size.width,
+                      margin: const EdgeInsets.only(top: 30.0),
+                      child: Text(
+                        "Anteckningar",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 17),
+                      ),
+                    ),
+                     Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: Text(
+                        initialTextBody,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 10,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 15.0,
+                        ),
+                      ),
+                    ),
                     Container(
                         width: MediaQuery.of(context).size.width,
                         margin: const EdgeInsets.only(top: 30.0),
@@ -159,9 +137,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
                           ),
                         ])),
                     Container(
-                        alignment: Alignment.centerLeft,
-                        width: MediaQuery.of(context).size.width,
-                        child: _editLatitude()),
+                      alignment: Alignment.centerLeft,
+                      width: MediaQuery.of(context).size.width,
+                      child: Text(
+                        initialTextLatitude,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 15.0,
+                        ),
+                      ),
+                    ),
                     Container(
                         width: MediaQuery.of(context).size.width,
                         margin: const EdgeInsets.only(top: 5.0),
@@ -174,9 +159,16 @@ class _OneObservationPageState extends State<OneObservationPage> {
                           ),
                         ])),
                     Container(
-                        alignment: Alignment.centerLeft,
-                        width: MediaQuery.of(context).size.width,
-                        child: _editLongitude()),
+                      alignment: Alignment.centerLeft,
+                      width: MediaQuery.of(context).size.width,
+                      child: Text(
+                        initialTextLongitude,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 15.0,
+                        ),
+                      ),
+                    ),
                     Container(
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height * 0.35,
@@ -202,7 +194,15 @@ class _OneObservationPageState extends State<OneObservationPage> {
             Container(
                 height: 100.0,
                 child: Center(
-                  child: Expanded(child: _editTitleTextField()),
+                  child: Expanded(
+                      child: Center(
+                          child: Text(
+                    initialTextTitle,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18.0,
+                    ),
+                  ))),
                 )),
             Container(
                 height: 30.0,
@@ -229,133 +229,51 @@ class _OneObservationPageState extends State<OneObservationPage> {
               return SimpleDialog(
                 backgroundColor: Colors.white,
                 children: [
-                  Column(
-                    children: <Widget>[
-                      Container(
-                        height: MediaQuery.of(context).size.width,
-                        //This one doesn't affecting anything but is needed, otherwise doesnt work.
-                        width: MediaQuery.of(context).size.width,
-                        child: CarouselSlider(
-                          options: CarouselOptions(
-                              enableInfiniteScroll: false,
-                              height: MediaQuery.of(context).size.width,
-                              enlargeCenterPage: true,
-                              onPageChanged: (index, reason) {
-                                setState(() {
-                                  _currentImg = index;
-                                });
-                              }),
-                          items: obs.imageUrl
-                              .map(
-                                (pics) => Center(
-                                    widthFactor: 2.0,
-                                    child: Image.network(
-                                      pics,
-                                      fit: BoxFit.cover,
-                                      width: MediaQuery.of(context).size.width,
-                                    )),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                      Material(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Ink(
-                              height: 50,
-                              width: 50,
-                              decoration: ShapeDecoration(
-                                color: Colors.blue,
-                                shape: CircleBorder(),
-                              ),
-                              child: IconButton(
-                                icon: Icon(Icons.add),
-                                color: Colors.white,
-                                onPressed: () {
-                                  if (obs.imageUrl.length < 7) {
-                                    //bör vara parameter till photoGalleryDialog?
-                                    PhotoGalleryDialog(
-                                            _goToCameraView, _picGallery)
-                                        .buildDialog(context);
-                                  } else {
-                                    MessageDialog().buildDialog(context, "Fel",
-                                        "Max antal bilder är 7.", true);
-                                  }
-                                },
-                              ),
-                            ),
-                            Ink(
-                                height: 50,
-                                width: 50,
-                                decoration: ShapeDecoration(
-                                  color: Colors.red,
-                                  shape: CircleBorder(),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.delete_forever_outlined,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: Text('Ta bort bild?'),
-                                            actions: [
-                                              FlatButton(
-                                                onPressed: () => Navigator.pop(
-                                                    context, false),
-                                                child: Text('Avbryt'),
-                                              ),
-                                              FlatButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(
-                                                          context, true),
-                                                  child: Text('Ta bort'))
-                                            ],
-                                          );
-                                        }).then((exit) {
-                                      if (exit) {
-                                        obs.imageUrl.removeAt(_currentImg);
-                                        //updateObservation(_key);
-                                      }
-                                    });
-                                  },
+                  Container(
+                    height: MediaQuery.of(context).size.width,
+                    //This one doesn't affecting anything but is needed, otherwise doesnt work.
+                    width: MediaQuery.of(context).size.width,
+                    child: CarouselSlider(
+                      options: CarouselOptions(
+                          enableInfiniteScroll: false,
+                          height: MediaQuery.of(context).size.width,
+                          enlargeCenterPage: true,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              _currentImg = index;
+                            });
+                          }),
+                      items: obs.imageUrl
+                          .map(
+                            (pics) => Center(
+                                widthFactor: 2.0,
+                                child: Image.network(
+                                  pics,
+                                  fit: BoxFit.cover,
+                                  width: MediaQuery.of(context).size.width,
                                 )),
-                          ],
-                        ),
-                      ),
-                    ],
+                          )
+                          .toList(),
+                    ),
                   ),
                 ],
               );
             });
       },
-      child: Stack(
-        children: <Widget>[
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.25,
-            margin: const EdgeInsets.only(right: 20.0),
-            child: obs.local
-                ? getLocalImage()
-                : Image.network(
-                    //Displays first image
-                    obs.imageUrl[0],
-                    errorBuilder: (BuildContext context, Object exception,
-                        StackTrace stackTrace) {
-                      return observationWithoutImage();
-                    },
-                  ),
-          ),
-          Align(
-            alignment: Alignment(-0.9, -0.9),
-            child: Icon(Icons.edit, color: Colors.grey[600]),
-          )
-        ],
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height * 0.25,
+        margin: const EdgeInsets.only(right: 20.0),
+        child: obs.local
+            ? getLocalImage()
+            : Image.network(
+                //Displays first image
+                obs.imageUrl[0],
+                errorBuilder: (BuildContext context, Object exception,
+                    StackTrace stackTrace) {
+                  return observationWithoutImage();
+                },
+              ),
       ),
     );
   }
@@ -441,13 +359,18 @@ class _OneObservationPageState extends State<OneObservationPage> {
     }
   }
 
-  //Spara och ta bort knappar
+  //Redigera och ta bort knappar
   Widget controllerButtons() {
     return ButtonBar(mainAxisSize: MainAxisSize.min,
         // this will take space as minimum as posible(to center)
         children: <Widget>[
           new RaisedButton(
               onPressed: () {
+                mapController.animateCamera(
+                  CameraUpdate.newCameraPosition(
+                    CameraPosition(target: LatLng(32.5, -120), zoom: 20.0),
+                  ),
+                );
                 buildDialog(context);
               },
               color: Colors.red[400],
@@ -458,55 +381,56 @@ class _OneObservationPageState extends State<OneObservationPage> {
                 padding: EdgeInsets.all(0),
                 child: Container(
                   alignment: Alignment.center,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(
-                        Icons.delete_forever_outlined,
-                        color: Colors.white,
-                      ),
-                      Text(
-                        'Ta bort',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                        ),
-                      )
-                    ],
+                  child: Icon(
+                    Icons.delete_forever_outlined,
+                    color: Colors.white,
                   ),
                 ),
               )),
           new RaisedButton(
-              onPressed: () {
-                updateObservation(_key);
-              },
-              color: Theme.of(context).accentColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18.0),
-                  side: BorderSide(color: Theme.of(context).accentColor)),
-              child: Padding(
-                padding: EdgeInsets.all(0),
-                child: Container(
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(
-                        Icons.check,
-                        color: Colors.white,
-                      ),
-                      Text(
-                        'Spara',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
+            onPressed: () {
+              showEditScreen();
+            },
+            color: Theme.of(context).accentColor,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+                side: BorderSide(color: Theme.of(context).accentColor)),
+            child: Padding(
+              padding: EdgeInsets.all(0),
+              child: Container(
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.edit,
+                  color: Colors.white,
                 ),
-              ))
+              ),
+            ),
+          )
         ]);
+  }
+  
+    void showEditScreen() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditObservationPage(obs, _key)),
+    );
+
+    if (result != null) {
+      _key.currentState.showSnackBar(
+          SnackBar(content: Text("Observationen har uppdaterats.")));
+      setState(() {
+        initialTextTitle = result.subject;
+        initialTextBody = result.body;
+        initialTextLatitude = result.latitude.toString();
+        initialTextLongitude = result.longitude.toString();
+        obs.imageUrl = result.imageUrl;
+
+        mapController.animateCamera(
+          CameraUpdate.newLatLng(LatLng(double.parse(initialTextLatitude),
+              double.parse(initialTextLongitude))),
+        );
+      });
+    }
   }
 
   void buildDialog(BuildContext context) {
@@ -585,19 +509,23 @@ class _OneObservationPageState extends State<OneObservationPage> {
         });
   }
 
+  
+  GoogleMapController mapController;
   Widget mapView() {
-    GoogleMapController mapController;
     CameraPosition observationLocation;
     List<Marker> markers = <Marker>[];
 
-    if (obs.latitude != null && obs.longitude != null) {
+    if (double.parse(initialTextLatitude) != null &&
+        double.parse(initialTextLongitude) != null) {
       markers.add(Marker(
         markerId: MarkerId(obs.id.toString()),
-        position: LatLng(obs.latitude, obs.longitude),
+        position: LatLng(double.parse(initialTextLatitude),
+            double.parse(initialTextLongitude)),
         infoWindow: InfoWindow(title: obs.subject),
       ));
       observationLocation = CameraPosition(
-        target: LatLng(obs.latitude, obs.longitude),
+        target: LatLng(double.parse(initialTextLatitude),
+            double.parse(initialTextLongitude)),
         zoom: 14.4746,
       );
     } else {
@@ -622,192 +550,12 @@ class _OneObservationPageState extends State<OneObservationPage> {
     );
   }
 
-  Widget _editBody() {
-    if (_editBodySwitch)
-      return TextField(
-        textInputAction: TextInputAction.done,
-        maxLines: 10,
-        onSubmitted: (newValue) {
-          setState(() {
-            initialTextBody = newValue;
-            _editBodySwitch = false;
-          });
-        },
-        autofocus: true,
-        controller: _editingControllerBody,
-      );
-    return Text(
-      initialTextBody,
-      overflow: TextOverflow.ellipsis,
-      maxLines: 10,
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 15.0,
-      ),
-    );
-  }
-
-  Widget _editTitleTextField() {
-    if (_isEditingText)
-      return Center(
-        child: TextField(
-          onSubmitted: (newValue) {
-            setState(() {
-              initialTextTitle = newValue;
-              _isEditingText = false;
-            });
-          },
-          autofocus: true,
-          controller: _editingControllerTitle,
-        ),
-      );
-    return InkWell(
-        onTap: () {
-          setState(() {
-            _isEditingText = true;
-          });
-        },
-        child: Center(
-            child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(children: [
-                  TextSpan(
-                    text: initialTextTitle,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18.0,
-                    ),
-                  ),
-                  WidgetSpan(
-                    child: Icon(Icons.edit, size: 20, color: Colors.grey[600]),
-                  ),
-                ]))));
-  }
-
-  Widget _editLatitude() {
-    if (_editLatitudeSwitch)
-      return TextField(
-        maxLines: 1,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
-          PositionInputFormatter(90.0, -90.0),
-        ],
-        textInputAction: TextInputAction.done,
-        onSubmitted: (newValue) {
-          setState(() {
-            initialTextLatitude = newValue;
-            _editLatitudeSwitch = false;
-          });
-        },
-        autofocus: true,
-        controller: _editingControllerLatitude,
-      );
-    return InkWell(
-        onTap: () {
-          setState(() {
-            _editLatitudeSwitch = true;
-          });
-        },
-        child: RichText(
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            text: TextSpan(children: [
-              TextSpan(
-                text: initialTextLatitude,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15.0,
-                ),
-              ),
-              WidgetSpan(
-                child: Icon(Icons.edit, size: 20, color: Colors.grey[600]),
-              ),
-            ])));
-  }
-
-  Widget _editLongitude() {
-    if (_editLongitudeSwitch)
-      return TextField(
-        maxLines: 1,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\.]')),
-          PositionInputFormatter(180.0, -180.0),
-        ],
-        textInputAction: TextInputAction.done,
-        onSubmitted: (newValue) {
-          setState(() {
-            initialTextLongitude = newValue;
-            _editLongitudeSwitch = false;
-          });
-        },
-        autofocus: true,
-        controller: _editingControllerLongitude,
-      );
-    return InkWell(
-        onTap: () {
-          setState(() {
-            _editLongitudeSwitch = true;
-          });
-        },
-        child: RichText(
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            text: TextSpan(children: [
-              TextSpan(
-                text: initialTextLongitude,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15.0,
-                ),
-              ),
-              WidgetSpan(
-                child: Icon(Icons.edit, size: 20, color: Colors.grey[600]),
-              ),
-            ])));
-  }
 
   String formatDate() {
     String string = obs.created;
     String date = string.substring(0, 10);
     String time = string.substring(11, 19);
     return date.replaceAll("-", "/") + " - " + time;
-  }
-
-  void updateObservation(key) {
-    if (obs.local) {
-      print("Updating: ${obs.localId} with text: ${initialTextTitle}");
-      LocalFileManager().updateObservation(Observation(
-          id: obs.id,
-          subject: initialTextTitle,
-          body: initialTextBody,
-          created: obs.created,
-          latitude: double.parse(initialTextLatitude),
-          longitude: double.parse(initialTextLatitude),
-          local: true,
-          localId: obs.localId,
-          imageUrl: obs.imageUrl));
-      //Shouldnt be possible to fail with a local observation
-      key.currentState.showSnackBar(
-          SnackBar(content: Text("Lokal observation har uppdaterats.")));
-      return;
-    }
-
-    ObservationsAPI.updateObservation(
-            id: obs.id,
-            title: initialTextTitle,
-            description: initialTextBody,
-            latitude: double.parse(initialTextLatitude),
-            longitude: double.parse(initialTextLongitude))
-        .then((var result) {
-      String response = result.toString();
-      if (response == "204")
-        response = "Observationen har uppdaterats.";
-      else
-        response = "Uppdateringen misslyckades.";
-      key.currentState.showSnackBar(SnackBar(content: Text(response)));
-    });
   }
 
   Future<void> removeObservation(key) async {
@@ -828,60 +576,5 @@ class _OneObservationPageState extends State<OneObservationPage> {
         response = "Borttagning misslyckades.";
       key.currentState.showSnackBar(SnackBar(content: Text(response)));
     });
-  }
-
-  Future<void> _picGallery() async {
-    final imageFile = await ImagePicker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-    );
-    if (imageFile == null) {
-      print('img is null');
-      return;
-    }
-    setState(() {
-      String _image = imageFile.path;
-      _checkImageSize(_image).then((value) {
-        value
-            ? obs.imageUrl.add(_image)
-            : _key.currentState.showSnackBar(
-                SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
-      });
-      Navigator.of(context).pop(context);
-    });
-  }
-
-  Future<void> _goToCameraView() async {
-    WidgetsFlutterBinding.ensureInitialized();
-
-    final cameras = await availableCameras();
-
-    var result = await Navigator.push(
-      this.context,
-      MaterialPageRoute(
-          builder: (context) => TakePictureScreen(camera: cameras.first)),
-    );
-
-    print(result);
-    print(obs.imageUrl.length);
-    if (result != null) {
-      _checkImageSize(result).then((value) {
-        setState(() {
-          value
-              ? obs.imageUrl.add(result)
-              : _key.currentState.showSnackBar(SnackBar(
-                  content: Text("Fel: Bildstorleken överstiger 5 MB")));
-          Navigator.of(context).pop(context);
-        });
-      });
-    }
-    print(obs.imageUrl.length);
-  }
-
-  Future<bool> _checkImageSize(String path) async {
-    var image = File(path);
-    int size = await image.length();
-
-    return size < MAX_IMAGE_SIZE;
   }
 }
