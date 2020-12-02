@@ -229,17 +229,31 @@ class _EditObservationPage extends State<EditObservationPage> {
                                   _currentImg = index;
                                 });
                               }),
-                          items: obs.imageUrl
-                              .map(
-                                (pics) => Center(
-                                    widthFactor: 2.0,
-                                    child: Image.network(
-                                      pics,
-                                      fit: BoxFit.cover,
-                                      width: MediaQuery.of(context).size.width,
-                                    )),
-                              )
-                              .toList(),
+                          items: obs.local
+                              ? obs.imageUrl
+                                  .map(
+                                    (pic) => Center(
+                                        widthFactor: 2.0,
+                                        child: Image.memory(
+                                          base64Decode(pic),
+                                          fit: BoxFit.cover,
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                        )),
+                                  )
+                                  .toList()
+                              : obs.imageUrl
+                                  .map(
+                                    (pics) => Center(
+                                        widthFactor: 2.0,
+                                        child: Image.network(
+                                          pics,
+                                          fit: BoxFit.cover,
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                        )),
+                                  )
+                                  .toList(),
                         ),
                       ),
                       Material(
