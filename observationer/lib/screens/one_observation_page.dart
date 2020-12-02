@@ -194,7 +194,15 @@ class _OneObservationPageState extends State<OneObservationPage> {
             Container(
                 height: 100.0,
                 child: Center(
-                  child: Expanded(child: ),
+                  child: Expanded(
+                      child: Center(
+                          child: Text(
+                    initialTextTitle,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18.0,
+                    ),
+                  ))),
                 )),
             Container(
                 height: 30.0,
