@@ -43,6 +43,7 @@ class _EditObservationPage extends State<EditObservationPage> {
   TextEditingController _editingControllerLatitude;
   TextEditingController _editingControllerLongitude;
   int _currentImg = 0;
+  List<String> imagesTakenPath;
   static const int MAX_IMAGE_SIZE = 5000000; // 5 MB
 
   @override
@@ -73,6 +74,7 @@ class _EditObservationPage extends State<EditObservationPage> {
       initialTextLongitude = "0.0";
     }
 
+    imagesTakenPath = [];
     _editingControllerTitle = TextEditingController(text: initialTextTitle);
     _editingControllerBody = TextEditingController(text: initialTextBody);
     _editingControllerLatitude =
@@ -270,11 +272,11 @@ class _EditObservationPage extends State<EditObservationPage> {
                               child: IconButton(
                                 icon: Icon(Icons.add),
                                 color: Colors.white,
-                                onPressed: () {
+                                onPressed: ()  {
                                   if (obs.imageUrl.length < 7) {
                                     //bör vara parameter till photoGalleryDialog?
                                     PhotoGalleryDialog(
-                                            _goToCameraView, _picGallery)
+                                             _goToCameraView, _picGallery)
                                         .buildDialog(context);
                                   } else {
                                     MessageDialog().buildDialog(context, "Fel",
@@ -309,18 +311,17 @@ class _EditObservationPage extends State<EditObservationPage> {
                                                 child: Text('Avbryt'),
                                               ),
                                               FlatButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(
-                                                          context, true),
+                                                  onPressed: () async {
+                                                    obs.imageUrl
+                                                        .removeAt(_currentImg);
+                                                    await removeObservationImage(
+                                                        _key);
+                                                    Navigator.pop(context);
+                                                  },
                                                   child: Text('Ta bort'))
                                             ],
                                           );
-                                        }).then((exit) {
-                                      if (exit) {
-                                        obs.imageUrl.removeAt(_currentImg);
-                                        //updateObservation(_key);
-                                      }
-                                    });
+                                        });
                                   },
                                 )),
                           ],
@@ -612,6 +613,50 @@ class _EditObservationPage extends State<EditObservationPage> {
     });
   }
 
+  Future<void> removeObservationImage(key) async {
+    if (obs.local) {
+      print("Updating: ${obs.localId} with text: ${initialTextTitle}");
+      LocalFileManager().updateObservation(Observation(
+          id: obs.id,
+          subject: initialTextTitle,
+          body: initialTextBody,
+          created: obs.created,
+          latitude: double.parse(initialTextLatitude),
+          longitude: double.parse(initialTextLongitude),
+          local: true,
+          localId: obs.localId,
+          imageUrl: obs.imageUrl));
+      //Shouldnt be possible to fail with a local observation
+      Navigator.pop(context);
+      return;
+    }
+
+    await ObservationsAPI.deleteObservationImage(obs, _currentImg)
+        .then((var result) {
+      String response = result.toString();
+      print("Respons: " + response);
+      if (response == "204")
+        response = "Bilden har tagits bort.";
+      else
+        response = "Borttagning misslyckades.";
+      key.currentState.showSnackBar(SnackBar(content: Text(response)));
+    });
+  }
+
+  Future<void> addObservationImage(key) async {
+
+    await ObservationsAPI.addObservationImage(obs, imagesTakenPath)
+        .then((var result) {
+      String response = result.toString();
+      if (response == "201") {
+        response = "Bilden har lagts till.";
+      }
+      else
+        response = "Kunde inte lägga till bild.";
+      key.currentState.showSnackBar(SnackBar(content: Text(response)));
+    });
+  }
+
   Future<void> _picGallery() async {
     final imageFile = await ImagePicker.pickImage(
       source: ImageSource.gallery,
@@ -643,17 +688,18 @@ class _EditObservationPage extends State<EditObservationPage> {
       MaterialPageRoute(
           builder: (context) => TakePictureScreen(camera: cameras.first)),
     );
-
     print(result);
     print(obs.imageUrl.length);
     if (result != null) {
       _checkImageSize(result).then((value) {
         setState(() {
           value
-              ? obs.imageUrl.add(result)
+              ? imagesTakenPath.add(result)
               : _key.currentState.showSnackBar(SnackBar(
                   content: Text(
                       "Fel: Bildstorleken överstiger ${MAX_IMAGE_SIZE / 1000000} MB")));
+          //Maybe not the best place to call addObservationImage, just testing for now though.
+          addObservationImage(_key);
           Navigator.of(context).pop(context);
         });
       });
