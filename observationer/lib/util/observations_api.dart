@@ -271,7 +271,6 @@ class ObservationsAPI {
     return response.statusCode;
   }
 
-
   static Future<List<String>> getInBase64(List<String> images) async {
     List<String> payloads = [];
     for (String path in images) {

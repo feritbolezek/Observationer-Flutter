@@ -582,7 +582,6 @@ class _EditObservationPage extends State<EditObservationPage> {
         imageUrl: obs.imageUrl);
 
     if (obs.local) {
-      print("Updating: ${obs.localId} with text: ${initialTextTitle}");
       LocalFileManager().updateObservation(Observation(
           id: obs.id,
           subject: initialTextTitle,
@@ -595,27 +594,26 @@ class _EditObservationPage extends State<EditObservationPage> {
           imageUrl: obs.imageUrl));
       //Shouldnt be possible to fail with a local observation
       Navigator.pop(context, callBack);
+    } else {
+      ObservationsAPI.updateObservation(
+              id: obs.id,
+              title: initialTextTitle,
+              description: initialTextBody,
+              latitude: double.parse(initialTextLatitude),
+              longitude: double.parse(initialTextLongitude))
+          .then((var result) {
+        String response = result.toString();
+        if (response == "204") {
+          Navigator.pop(context, callBack);
+        } else
+          key.currentState.showSnackBar(
+              SnackBar(content: Text("Uppdateringen misslyckades.")));
+      });
     }
-
-    ObservationsAPI.updateObservation(
-            id: obs.id,
-            title: initialTextTitle,
-            description: initialTextBody,
-            latitude: double.parse(initialTextLatitude),
-            longitude: double.parse(initialTextLongitude))
-        .then((var result) {
-      String response = result.toString();
-      if (response == "204") {
-        Navigator.pop(context, callBack);
-      } else
-        key.currentState.showSnackBar(
-            SnackBar(content: Text("Uppdateringen misslyckades.")));
-    });
   }
 
   Future<void> removeObservationImage(key) async {
     if (obs.local) {
-      print("Updating: ${obs.localId} with text: ${initialTextTitle}");
       LocalFileManager().updateObservation(Observation(
           id: obs.id,
           subject: initialTextTitle,
@@ -629,6 +627,7 @@ class _EditObservationPage extends State<EditObservationPage> {
       //Shouldnt be possible to fail with a local observation
       key.currentState
           .showSnackBar(SnackBar(content: Text("Bilden har tagits bort.")));
+      Navigator.pop(context);
       return;
     }
 
@@ -645,15 +644,19 @@ class _EditObservationPage extends State<EditObservationPage> {
   }
 
   Future<void> addObservationImage(key) async {
-    await ObservationsAPI.addObservationImage(obs, imagesTakenPath)
-        .then((var result) {
-      String response = result.toString();
-      if (response == "201") {
-        response = "Bilden har lagts till.";
-      } else
-        response = "Kunde inte lägga till bild.";
-      key.currentState.showSnackBar(SnackBar(content: Text(response)));
-    });
+    if (!obs.local) {
+      await ObservationsAPI.addObservationImage(obs, imagesTakenPath)
+          .then((var result) {
+        String response = result.toString();
+        if (response == "201") {
+          response = "Bilden har lagts till.";
+        } else
+          response = "Kunde inte lägga till bild.";
+        key.currentState.showSnackBar(SnackBar(content: Text(response)));
+      });
+    } else {
+      updateObservation(_key);
+    }
   }
 
   Future<void> _picGallery() async {
@@ -695,7 +698,7 @@ class _EditObservationPage extends State<EditObservationPage> {
       _checkImageSize(result).then((value) {
         setState(() {
           value
-              ? imagesTakenPath.add(result)
+              ? addToImages(result)
               : _key.currentState.showSnackBar(SnackBar(
                   content: Text(
                       "Fel: Bildstorleken överstiger ${MAX_IMAGE_SIZE / 1000000} MB")));
@@ -706,6 +709,16 @@ class _EditObservationPage extends State<EditObservationPage> {
           Navigator.of(context).pop(context);
         });
       });
+    }
+  }
+
+  void addToImages(String result) {
+    if (!obs.local) {
+      imagesTakenPath.add(result);
+    } else {
+      File f = new File(result);
+      obs.imageUrl.add(base64Encode(f.readAsBytesSync()));
+      imagesTakenPath.add(base64Encode(f.readAsBytesSync()));
     }
   }
 
