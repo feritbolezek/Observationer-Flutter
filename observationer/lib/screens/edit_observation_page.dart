@@ -188,7 +188,7 @@ class _EditObservationPage extends State<EditObservationPage> {
             Container(
                 height: 100.0,
                 child: Center(
-                  child: Expanded(child: _editTitleTextField()),
+                  child: _editTitleTextField(),
                 )),
             Container(
                 height: 30.0,
