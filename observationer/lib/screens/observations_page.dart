@@ -164,8 +164,8 @@ class _ObservationsPageState extends State<ObservationsPage> {
     }
 
     void navigateSecondPage() {
-      Route route =
-          MaterialPageRoute(builder: (context) => OneObservationPage(obs, _key));
+      Route route = MaterialPageRoute(
+          builder: (context) => OneObservationPage(obs, _key));
       Navigator.push(context, route).then(onGoBack);
     }
 
@@ -221,7 +221,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
               ),
               fillColor: Color.fromRGBO(180, 180, 180, 0.1),
               filled: true,
-              hintText: 'Type Something...',
+              hintText: 'Sök',
               isDense: true,
             ),
           ),
@@ -229,62 +229,83 @@ class _ObservationsPageState extends State<ObservationsPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(
-                'Sortera',
-                style: TextStyle(fontSize: 15),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  'Sortera',
+                  style: TextStyle(fontSize: 15),
+                ),
               ),
-              ButtonTheme(
-                minWidth: 100.0,
-                height: 25.0,
-                child: RaisedButton(
-                  color: filterChoice == 1 ? Colors.blue : Colors.grey[300],
-                  textColor: filterChoice == 1 ? Colors.white : Colors.black,
-                  onPressed: () {
-                    setState(() {
-                      filterChoice = 1;
-                    });
-                  },
-                  child: Text("Alfabetiskt", style: TextStyle(fontSize: 15)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: ButtonTheme(
+                    height: 25.0,
+                    child: RaisedButton(
+                      color: filterChoice == 1 ? Colors.blue : Colors.grey[300],
+                      textColor:
+                          filterChoice == 1 ? Colors.white : Colors.black,
+                      onPressed: () {
+                        setState(() {
+                          filterChoice = 1;
+                        });
+                      },
+                      child: FittedBox(
+                          fit: BoxFit.fitWidth, child: Text('Alfabetiskt')),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                    ),
                   ),
                 ),
               ),
-              ButtonTheme(
-                minWidth: 100.0,
-                height: 25.0,
-                child: RaisedButton(
-                  color: filterChoice == 2 ? Colors.blue : Colors.grey[300],
-                  textColor: filterChoice == 2 ? Colors.white : Colors.black,
-                  onPressed: () {
-                    setState(() {
-                      filterChoice = 2;
-                    });
-                  },
-                  child: Text("Datum", style: TextStyle(fontSize: 15)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: ButtonTheme(
+                    height: 25.0,
+                    child: RaisedButton(
+                      color: filterChoice == 2 ? Colors.blue : Colors.grey[300],
+                      textColor:
+                          filterChoice == 2 ? Colors.white : Colors.black,
+                      onPressed: () {
+                        setState(() {
+                          filterChoice = 2;
+                        });
+                      },
+                      child:
+                          FittedBox(fit: BoxFit.fitWidth, child: Text('Datum')),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                    ),
                   ),
                 ),
               ),
-              ButtonTheme(
-                minWidth: 100.0,
-                height: 25.0,
-                child: RaisedButton(
-                  color: filterChoice == 3 ? Colors.blue : Colors.grey[300],
-                  textColor: filterChoice == 3 ? Colors.white : Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: ButtonTheme(
+                    height: 25.0,
+                    child: RaisedButton(
+                      color: filterChoice == 3 ? Colors.blue : Colors.grey[300],
+                      textColor:
+                          filterChoice == 3 ? Colors.white : Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                      onPressed: () async {
+                        await _getCurrentLocation();
+                        if (_permission) {
+                          setState(() {
+                            filterChoice = 3;
+                          });
+                        }
+                      },
+                      child: FittedBox(
+                          fit: BoxFit.fitWidth, child: Text('Närmaste')),
+                    ),
                   ),
-                  onPressed: () async {
-                    await _getCurrentLocation();
-                    if(_permission){
-                      setState(() {
-                        filterChoice = 3;
-                      });
-                    }
-                  },
-                  child: Text("Närmaste", style: TextStyle(fontSize: 15)),
                 ),
               ),
             ],
