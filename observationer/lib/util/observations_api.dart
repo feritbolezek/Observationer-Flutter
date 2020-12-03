@@ -234,6 +234,43 @@ class ObservationsAPI {
     return response.statusCode;
   }
 
+  static Future<int> deleteObservationImage(Observation obs, int index) async {
+    List<String> images = await ObservationsAPI().fetchObservationImages(obs);
+    String imageToDelete = images[index].substring(0, images[index].length - 5);
+
+    var response = await http.delete(
+      imageToDelete,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json',
+      },
+    );
+
+    return response.statusCode;
+  }
+
+  static Future<int> addObservationImage(Observation obs, images) async {
+    var response;
+    int obsId = obs.id;
+
+    if (images != null && images.isNotEmpty) {
+      List<String> payloads = await getInBase64(images);
+      for (String payload in payloads) {
+        Map<String, String> headers = {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+        };
+
+        response = await http.post(
+            'https://saabstudent2020.azurewebsites.net/observation/$obsId/attachment',
+            headers: headers,
+            body: payload);
+      }
+    }
+
+    return response.statusCode;
+  }
+
   static Future<List<String>> getInBase64(List<String> images) async {
     List<String> payloads = [];
     for (String path in images) {
