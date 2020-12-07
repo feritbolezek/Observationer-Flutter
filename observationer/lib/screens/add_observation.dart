@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:observationer/model/observation.dart';
@@ -9,6 +10,7 @@ import 'package:observationer/screens/display_image.dart';
 import 'package:observationer/screens/photo_gallery_dialog.dart';
 import 'package:observationer/util/local_file_manager.dart';
 import 'package:observationer/util/observations_api.dart';
+import 'package:observationer/util/LengthLimitingTextFieldFormatterFixed.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'message_dialog.dart';
@@ -93,6 +95,11 @@ class _AddObservationState extends State<AddObservation> {
                   height: 8.0,
                 ),
                 TextField(
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatterFixed (65),
+                  ],
+                  maxLength: 65,
+                  maxLengthEnforced: false,
                   decoration: InputDecoration(labelText: 'Titel...'),
                   onChanged: (val) {
                     title = val;
@@ -102,9 +109,14 @@ class _AddObservationState extends State<AddObservation> {
                   height: 8.0,
                 ),
                 TextField(
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatterFixed (250),
+                  ],
+                  // for mobile
                   keyboardType: TextInputType.multiline,
                   maxLines: 3,
                   maxLength: 250,
+                  maxLengthEnforced: false,
                   decoration: InputDecoration(labelText: 'Anteckningar...'),
                   onChanged: (val) {
                     desc = val;
