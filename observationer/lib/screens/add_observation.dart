@@ -16,10 +16,13 @@ import 'dart:async';
 
 class AddObservation extends StatefulWidget {
   AddObservation(this._position);
+
   String path;
+
   AddObservation.xd(this._position, path) {
     this.path = path;
   }
+
   final _position;
 
   @override
@@ -366,6 +369,10 @@ class _AddObservationState extends State<AddObservation> {
   Future<void> _goToCameraView() async {
     WidgetsFlutterBinding.ensureInitialized();
 
+    if (imagesTakenPath.length == 6) {
+      Navigator.pop(this.context);
+    }
+
     final cameras = await availableCameras();
 
     var result = await Navigator.push(
@@ -387,6 +394,10 @@ class _AddObservationState extends State<AddObservation> {
   }
 
   Future<void> _picGallery() async {
+    if (imagesTakenPath.length == 6) {
+      Navigator.pop(this.context);
+    }
+
     final imageFile = await ImagePicker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 600,
