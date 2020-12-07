@@ -194,10 +194,10 @@ class _EditObservationPage extends State<EditObservationPage> {
                 height: 30.0,
                 child: Center(
                     child: Text(
-                  formatDate(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-                ))),
+                      formatDate(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                    ))),
             Container(height: 50.0, child: controllerButtons()),
           ]),
         ),
@@ -212,125 +212,141 @@ class _EditObservationPage extends State<EditObservationPage> {
             context: context,
             barrierDismissible: true,
             builder: (context) {
-              return SimpleDialog(
-                backgroundColor: Colors.white,
-                children: [
-                  Column(
-                    children: <Widget>[
-                      Container(
-                        height: MediaQuery.of(context).size.width,
-                        //This one doesn't affecting anything but is needed, otherwise doesnt work.
-                        width: MediaQuery.of(context).size.width,
-                        child: CarouselSlider(
-                          options: CarouselOptions(
-                              enableInfiniteScroll: false,
-                              height: MediaQuery.of(context).size.width,
-                              enlargeCenterPage: true,
-                              onPageChanged: (index, reason) {
-                                setState(() {
-                                  _currentImg = index;
-                                });
-                              }),
-                          items: obs.local
-                              ? obs.imageUrl
-                                  .map(
-                                    (pic) => Center(
-                                        widthFactor: 2.0,
-                                        child: Image.memory(
-                                          base64Decode(pic),
-                                          fit: BoxFit.cover,
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                        )),
-                                  )
-                                  .toList()
-                              : obs.imageUrl
-                                  .map(
-                                    (pics) => Center(
-                                        widthFactor: 2.0,
-                                        child: Image.network(
-                                          pics,
-                                          fit: BoxFit.cover,
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                        )),
-                                  )
-                                  .toList(),
+              return StatefulBuilder(builder: (context, setState) {
+                print("Rebuild");
+                return SimpleDialog(
+                  backgroundColor: Colors.white,
+                  children: [
+                    Column(
+                      children: <Widget>[
+                        Container(
+                          height: MediaQuery.of(context).size.width,
+                          //This one doesn't affecting anything but is needed, otherwise doesnt work.
+                          width: MediaQuery.of(context).size.width,
+                          child: CarouselSlider(
+                            options: CarouselOptions(
+                                enableInfiniteScroll: false,
+                                height: MediaQuery.of(context).size.width,
+                                enlargeCenterPage: true,
+                                onPageChanged: (index, reason) {
+                                  setState(() {
+                                    _currentImg = index;
+                                  });
+                                }),
+                            items: obs.local
+                                ? obs.imageUrl
+                                .map(
+                                  (pic) => Center(
+                                  widthFactor: 2.0,
+                                  child: Image.memory(
+                                    base64Decode(pic),
+                                    fit: BoxFit.cover,
+                                    width: MediaQuery.of(context)
+                                        .size
+                                        .width,
+                                  )),
+                            )
+                                .toList()
+                                : obs.imageUrl
+                                .map(
+                                  (pics) => Center(
+                                  widthFactor: 2.0,
+                                  child: Image.network(
+                                    pics,
+                                    fit: BoxFit.cover,
+                                    width: MediaQuery.of(context)
+                                        .size
+                                        .width,
+                                  )),
+                            )
+                                .toList(),
+                          ),
                         ),
-                      ),
-                      Material(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Ink(
-                              height: 50,
-                              width: 50,
-                              decoration: ShapeDecoration(
-                                color: Colors.blue,
-                                shape: CircleBorder(),
-                              ),
-                              child: IconButton(
-                                icon: Icon(Icons.add),
-                                color: Colors.white,
-                                onPressed: () {
-                                  if (obs.imageUrl.length < 7) {
-                                    //bör vara parameter till photoGalleryDialog?
-                                    PhotoGalleryDialog(
-                                            _goToCameraView, _picGallery)
-                                        .buildDialog(context);
-                                  } else {
-                                    MessageDialog().buildDialog(context, "Fel",
-                                        "Max antal bilder är 7.", true);
-                                  }
-                                },
-                              ),
-                            ),
-                            Ink(
+                        Material(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Ink(
                                 height: 50,
                                 width: 50,
                                 decoration: ShapeDecoration(
-                                  color: Colors.red,
+                                  color: Colors.blue,
                                   shape: CircleBorder(),
                                 ),
                                 child: IconButton(
-                                  icon: Icon(
-                                    Icons.delete_forever_outlined,
-                                    color: Colors.white,
-                                  ),
+                                  icon: Icon(Icons.add),
+                                  color: Colors.white,
                                   onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: Text('Ta bort bild?'),
-                                            actions: [
-                                              FlatButton(
-                                                onPressed: () => Navigator.pop(
-                                                    context, false),
-                                                child: Text('Avbryt'),
-                                              ),
-                                              FlatButton(
-                                                  onPressed: () async {
-                                                    obs.imageUrl
-                                                        .removeAt(_currentImg);
-                                                    await removeObservationImage(
-                                                        _key);
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: Text('Ta bort'))
-                                            ],
-                                          );
-                                        });
+                                    if (obs.imageUrl.length < 7) {
+                                      //bör vara parameter till photoGalleryDialog?
+                                      PhotoGalleryDialog(
+                                          _goToCameraView, _picGallery)
+                                          .buildDialog(context);
+                                    } else {
+                                      MessageDialog().buildDialog(
+                                          context,
+                                          "Fel",
+                                          "Max antal bilder är 7.",
+                                          true);
+                                    }
+
                                   },
-                                )),
-                          ],
+                                ),
+                              ),
+                              Ink(
+                                  height: 50,
+                                  width: 50,
+                                  decoration: ShapeDecoration(
+                                    color: Colors.red,
+                                    shape: CircleBorder(),
+                                  ),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.delete_forever_outlined,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: Text('Ta bort bild?'),
+                                              actions: [
+                                                FlatButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          context, false),
+                                                  child: Text('Avbryt'),
+                                                ),
+                                                FlatButton(
+                                                    onPressed: () async {
+                                                      obs.imageUrl.removeAt(
+                                                          _currentImg);
+                                                      await removeObservationImage(
+                                                          _key);
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text('Ta bort'))
+                                              ],
+                                            );
+                                          }).then((value) {
+                                        setState(() {
+                                          if (_currentImg > 0) {
+                                            _currentImg = _currentImg - 1;
+                                          }
+                                        });
+                                      });
+                                    },
+                                  )),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
+                      ],
+                    ),
+                  ],
+                );
+              });
             });
       },
       child: Container(
@@ -340,13 +356,13 @@ class _EditObservationPage extends State<EditObservationPage> {
         child: obs.local
             ? getLocalImage()
             : Image.network(
-                //Displays first image
-                obs.imageUrl[0],
-                errorBuilder: (BuildContext context, Object exception,
-                    StackTrace stackTrace) {
-                  return observationWithoutImage();
-                },
-              ),
+          //Displays first image
+          obs.imageUrl[0],
+          errorBuilder: (BuildContext context, Object exception,
+              StackTrace stackTrace) {
+            return observationWithoutImage();
+          },
+        ),
       ),
     );
   }
@@ -362,9 +378,9 @@ class _EditObservationPage extends State<EditObservationPage> {
     return Container(
       decoration: BoxDecoration(
           image: DecorationImage(
-        image: AssetImage('assets/images/Placeholder.png'),
-        fit: BoxFit.fill,
-      )),
+            image: AssetImage('assets/images/Placeholder.png'),
+            fit: BoxFit.fill,
+          )),
     );
   }
 
@@ -378,10 +394,10 @@ class _EditObservationPage extends State<EditObservationPage> {
               child: Container(
                 decoration: BoxDecoration(
                     image: DecorationImage(
-                  image: AssetImage('assets/images/Placeholder.png'),
-                  fit: BoxFit.none,
-                  alignment: Alignment.bottomRight,
-                )),
+                      image: AssetImage('assets/images/Placeholder.png'),
+                      fit: BoxFit.none,
+                      alignment: Alignment.bottomRight,
+                    )),
               )),
           Image.network(
             //Displays first image
@@ -425,9 +441,9 @@ class _EditObservationPage extends State<EditObservationPage> {
       return Container(
         decoration: BoxDecoration(
             image: DecorationImage(
-          image: AssetImage('assets/images/Placeholder.png'),
-          fit: BoxFit.fill,
-        )),
+              image: AssetImage('assets/images/Placeholder.png'),
+              fit: BoxFit.fill,
+            )),
       );
     }
   }
@@ -569,18 +585,8 @@ class _EditObservationPage extends State<EditObservationPage> {
     return date.replaceAll("-", "/") + " - " + time;
   }
 
-  void updateObservation(key) {
-    Observation callBack = Observation(
-        id: obs.id,
-        subject: initialTextTitle,
-        body: initialTextBody,
-        created: obs.created,
-        latitude: double.parse(initialTextLatitude),
-        longitude: double.parse(initialTextLongitude),
-        local: false,
-        localId: obs.localId,
-        imageUrl: obs.imageUrl);
-
+  void updateObservation(key, [bool addImage]) {
+    print(addImage);
     if (obs.local) {
       LocalFileManager().updateObservation(Observation(
           id: obs.id,
@@ -592,19 +598,26 @@ class _EditObservationPage extends State<EditObservationPage> {
           local: true,
           localId: obs.localId,
           imageUrl: obs.imageUrl));
+      if (addImage) {
+        print("Lägg till lokal bild!");
+        key.currentState.showSnackBar(
+            SnackBar(content: Text("Lokal bild har lagts till.")));
+        Future.delayed(Duration(seconds: 2), () {
+          _key.currentState.hideCurrentSnackBar();
+        });
+      }
       //Shouldnt be possible to fail with a local observation
-      Navigator.pop(context, callBack);
     } else {
       ObservationsAPI.updateObservation(
-              id: obs.id,
-              title: initialTextTitle,
-              description: initialTextBody,
-              latitude: double.parse(initialTextLatitude),
-              longitude: double.parse(initialTextLongitude))
+          id: obs.id,
+          title: initialTextTitle,
+          description: initialTextBody,
+          latitude: double.parse(initialTextLatitude),
+          longitude: double.parse(initialTextLongitude))
           .then((var result) {
         String response = result.toString();
         if (response == "204") {
-          Navigator.pop(context, callBack);
+          Navigator.pop(context);
         } else
           key.currentState.showSnackBar(
               SnackBar(content: Text("Uppdateringen misslyckades.")));
@@ -626,20 +639,24 @@ class _EditObservationPage extends State<EditObservationPage> {
           imageUrl: obs.imageUrl));
       //Shouldnt be possible to fail with a local observation
       key.currentState
-          .showSnackBar(SnackBar(content: Text("Bilden har tagits bort.")));
-      Navigator.pop(context);
+          .showSnackBar(SnackBar(content: Text("Lokal bild har tagits bort.")));
+      Future.delayed(Duration(seconds: 2), () {
+        _key.currentState.hideCurrentSnackBar();
+      });
       return;
     }
 
     await ObservationsAPI.deleteObservationImage(obs, _currentImg)
         .then((var result) {
       String response = result.toString();
-      print("Respons: " + response);
       if (response == "204")
         response = "Bilden har tagits bort.";
       else
         response = "Borttagning misslyckades.";
       key.currentState.showSnackBar(SnackBar(content: Text(response)));
+      Future.delayed(Duration(seconds: 2), () {
+        _key.currentState.hideCurrentSnackBar();
+      });
     });
   }
 
@@ -648,14 +665,22 @@ class _EditObservationPage extends State<EditObservationPage> {
       await ObservationsAPI.addObservationImage(obs, imagesTakenPath)
           .then((var result) {
         String response = result.toString();
+        print("AddObservationImage: " + response);
         if (response == "201") {
           response = "Bilden har lagts till.";
+          setState(() {
+            _currentImg = _currentImg + 1;
+          });
         } else
           response = "Kunde inte lägga till bild.";
         key.currentState.showSnackBar(SnackBar(content: Text(response)));
+        Future.delayed(Duration(seconds: 2), () {
+          _key.currentState.hideCurrentSnackBar();
+        });
       });
     } else {
-      updateObservation(_key);
+      print("Update local");
+      updateObservation(_key, true);
     }
   }
 
@@ -674,7 +699,7 @@ class _EditObservationPage extends State<EditObservationPage> {
         value
             ? imagesTakenPath.add(_image)
             : _key.currentState.showSnackBar(
-                SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
+            SnackBar(content: Text("Fel: Bildstorleken överstiger 5 MB")));
         if (value) {
           addObservationImage(_key);
         }
@@ -693,19 +718,20 @@ class _EditObservationPage extends State<EditObservationPage> {
       MaterialPageRoute(
           builder: (context) => TakePictureScreen(camera: cameras.first)),
     );
-    print(result);
+
     if (result != null) {
       _checkImageSize(result).then((value) {
-        setState(() {
+        setState(()  {
           value
               ? addToImages(result)
               : _key.currentState.showSnackBar(SnackBar(
-                  content: Text(
-                      "Fel: Bildstorleken överstiger ${MAX_IMAGE_SIZE / 1000000} MB")));
+              content: Text(
+                  "Fel: Bildstorleken överstiger ${MAX_IMAGE_SIZE / 1000000} MB")));
           //Maybe not the best place to call addObservationImage, just testing for now though.
           if (value) {
             addObservationImage(_key);
           }
+          imagesTakenPath = [];
           Navigator.of(context).pop(context);
         });
       });
