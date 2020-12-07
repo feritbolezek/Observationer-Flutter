@@ -96,9 +96,9 @@ class _AddObservationState extends State<AddObservation> {
                 ),
                 TextField(
                   inputFormatters: [
-                    LengthLimitingTextInputFormatterFixed (65),
+                    LengthLimitingTextInputFormatterFixed (64),
                   ],
-                  maxLength: 65,
+                  maxLength: 64,
                   maxLengthEnforced: false,
                   decoration: InputDecoration(labelText: 'Titel...'),
                   onChanged: (val) {
