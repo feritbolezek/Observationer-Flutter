@@ -7,6 +7,7 @@ class navbar extends StatefulWidget {
   navbar(this.index);
 
   final int index;
+
   @override
   _navbarState createState() => _navbarState(index);
 }
@@ -27,9 +28,11 @@ class _navbarState extends State<navbar> {
             label: "Karta",
           ),
           new BottomNavigationBarItem(
-            icon: Icon(Icons.add_a_photo, size: 25.0,),
-            label: ""
-          ),
+              icon: Icon(
+                Icons.add_a_photo,
+                size: 25.0,
+              ),
+              label: ""),
           new BottomNavigationBarItem(
             icon: Icon(Icons.add_location_alt),
             label: "Observationer",
@@ -38,21 +41,33 @@ class _navbarState extends State<navbar> {
   }
 
   void onTabTapped(int index) {
-    if(_index != index) {
+    //Keep track of previous page
+    int previousPageIndex = _index;
+    if (_index != index) {
       setState(() {
         _index = index;
       });
       if (_index == 0) {
         Navigator.of(context)
-            .push(MaterialPageRoute<void>(builder: (context) => MapView()));
+            .push(MaterialPageRoute<void>(builder: (context) => MapView()))
+            .then((value) => setState(() {
+                  _index = previousPageIndex;
+                }));
       } else if (_index == 1) {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => EmergencyCamera()));
-      } else if (_index == 2){
-        Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (context) => ObservationsPage()));
+        Navigator.of(context)
+            .push(MaterialPageRoute<void>(
+                builder: (context) => EmergencyCamera()))
+            .then((value) => setState(() {
+                  _index = previousPageIndex;
+                }));
+      } else if (_index == 2) {
+        Navigator.of(context)
+            .push(MaterialPageRoute<void>(
+                builder: (context) => ObservationsPage()))
+            .then((value) => setState(() {
+                  _index = previousPageIndex;
+                }));
       }
     }
   }
 }
-
