@@ -172,7 +172,7 @@ class _MapViewState extends State<MapView> {
     return Container(
       child: Center(
         child: Text(
-          'Om du inte redan har det, var god och tillåt oss få åtkomst till din position.',
+          'Om du inte redan har det, var god och tillåt åtkomst till din position.',
           style: TextStyle(fontSize: 22.0),
           textAlign: TextAlign.center,
         ),
