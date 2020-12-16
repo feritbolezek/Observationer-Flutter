@@ -65,7 +65,7 @@ class _MapViewState extends State<MapView> {
     return _locationManager.getPosition() == null
         ? Center(
             child: Text(
-              'Location unavailable',
+              'Position otillgänglig',
               style: TextStyle(fontSize: 16.0, color: Colors.white),
             ),
           )
@@ -172,7 +172,7 @@ class _MapViewState extends State<MapView> {
     return Container(
       child: Center(
         child: Text(
-          'If you have not, please allow access to your location to use this view.',
+          'Om du inte redan har det, var god och tillåt oss få åtkomst till din position.',
           style: TextStyle(fontSize: 22.0),
           textAlign: TextAlign.center,
         ),
@@ -207,6 +207,10 @@ class _MapViewState extends State<MapView> {
         onVisibilityChanged: (visibilityInfo) {
           if (visibilityInfo.visibleFraction == 1.0 && this.mounted) {
             _locationManager.getPositionUpdates((lat, long) {
+              if (!this.mounted) {
+                _locationManager.stopPositionUpdates();
+                return;
+              }
               setState(() {
                 _cameraPosition = CameraPosition(
                   target: LatLng(lat, long),
